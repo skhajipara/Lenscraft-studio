@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LensCraft Studio</title>
+  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><style>path,circle{stroke:%23111111}.flash{fill:%23111111;stroke:none}@media (prefers-color-scheme: dark){path,circle{stroke:%23ffffff}.flash{fill:%23ffffff}}</style><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle><circle class="flash" cx="18" cy="10" r="1"></circle></svg>' type="image/svg+xml">  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="preloader">
+  <div class="camera-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path class="draw-path" d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+      <circle class="draw-lens" cx="12" cy="13" r="4"></circle>
+      <circle class="flash-pulse" cx="18" cy="10" r="1" fill="#ffffff" stroke="none"></circle>
+    </svg>
+  </div>
+  <h2 class="loader-text">LensCraft</h2>
+</div>
+
+<header class="header">
+  <div class="container">
+    <a href="index.html" style="text-decoration: none; color: inherit;">
+      <h1 class="logo">LensCraft Studio</h1>
+    </a>
+    <nav class="nav">
+      <a href="#home">Home</a>
+      <a href="#services">Services</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero dark-section1" id="home">
+  <div class="container reveal">
+    <h2>Capture Your Beautiful Moments</h2>
+    <p>• Wedding • Engagement • Pre-Wedding • Baby-Shoot </p>
+    <a href="#services" class="btn">Explore Services</a>
+  </div>
+</section>
+
+<section class="services light-section" id="services">
+  <div class="container">
+    <h2 class="section-title reveal">Our Services</h2>
+
+    <div class="services-wrapper">
+
+      <a href="packages.html#wedding" class="card reveal card-link" style="color: #111;">
+        <h3>Wedding Shoot</h3>
+        <p>Premium Photography & Cinematic Films</p>
+        <p class="price">Packages from ₹25,000</p>
+      </a>
+
+      <a href="packages.html#engagement" class="card reveal card-link" style="color: #111;">
+        <h3>Engagement Ceremonies</h3>
+        <p>Ring exchange & beautiful candid moments</p>
+        <p class="price">Packages from ₹20,000</p>
+      </a>
+
+      <a href="packages.html#prewedding" class="card reveal card-link" style="color: #111;">
+        <h3>Pre-Wedding Shoot</h3>
+        <p>Story-based Couple Shoots</p>
+        <p class="price">Packages from ₹20,000</p>
+      </a>
+
+      <a href="packages.html#baby" class="card reveal card-link" style="color: #111;">
+        <h3>Baby Photoshoot</h3>
+        <p>Natural & Timeless Moments</p>
+        <p class="price">Packages from ₹2,000</p>
+      </a>
+
+      <a href="packages.html#religious" class="card reveal card-link" style="color: #111;">
+        <h3>Cultural Functions</h3>
+        <p>Traditional events & family gatherings</p>
+        <p class="price">Packages from ₹10,000</p>
+      </a>
+
+    </div>
+
+    <div class="services-btn reveal">
+      <a href="services.html" class="btn main-btn">View more Services</a>
+    </div>
+
+  </div>
+</section>
+
+<section class="board dark-section1 reveal">
+  <div class="container narrow" id="about">
+    <h2>What We Offer</h2>
+    <div class="offer-grid">
+      <div>Professional Photography</div>
+      <div>Cinematic Videography</div>
+      <div>Creative Reels & Short Videos</div>
+      <div>Event Coverage</div>
+      <div>Customized Packages as per Client Requirements</div>
+    </div>
+    <p class="board-note">
+      Whether it’s a small event or a grand occasion, we have flexible packages 
+      to suit every budget and vision.
+    </p>
+  </div>
+</section>
+
+<section class="board light-section reveal">
+  <div class="container narrow">
+    <h2>Why Choose Us</h2>
+    <p class="subtitle">What Makes Us Different</p>
+    <ul class="why-list">
+      <li>✔ Experienced & Skilled Team</li>
+      <li>✔ Affordable & Flexible Pricing</li>
+      <li>✔ High-Quality Output</li>
+      <li>✔ Timely Delivery</li>
+      <li>✔ Friendly & Professional Support</li>
+    </ul>
+    <p class="board-note">Your satisfaction is our priority.</p>
+  </div>
+</section>
+
+<section class="board dark-section1 reveal" id="stats">
+  <div class="container">
+    <h2>Our Journey</h2>
+    <p class="subtitle">Numbers that speak for our dedication</p>
+    <div class="stats-grid">
+      
+      <div class="stat-item">
+        <h3><span class="counter" id="happyCustomers" data-target="500">0</span>+</h3>
+        <p>Happy Customers</p>
+      </div>
+
+      <div class="stat-item">
+        <h3><span class="counter" id="yearsExperience" data-target="8">0</span>+</h3>
+        <p>Years of Experience</p>
+      </div>
+
+      <div class="stat-item">
+        <h3><span class="counter" id="eventsCovered" data-target="600">0</span>+</h3>
+        <p>Events Covered</p>
+      </div>
+
+      <div class="stat-item">
+        <h3><span class="counter" id="citiesExplored" data-target="15">0</span>+</h3>
+        <p>Cities Explored</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="board light-section reveal">
+  <div class="container narrow">
+    <h2>Packages</h2>
+    <p class="subtitle">Flexible Packages for Every Need</p>
+    <p>
+      “Make your event unforgettable with our professional photography. We offer special packages customized to match your vision and requirements.”
+    </p>
+    <a href="packages.html" class="btn">View Packages</a>
+  </div>
+</section>
+
+<section class="board dark-section1 reveal">
+  <div class="container narrow">
+    <h2>Gallery / Portfolio</h2>
+    <p class="subtitle">Our Work Speaks for Itself</p>
+    <p>
+      Explore our recent projects and see how we capture moments with creativity and perfection.
+    </p>
+    <a href="gallery.html" class="btn">View Gallery</a>
+  </div>
+</section>
+
+<section class="board light-section reveal">
+  <div class="container narrow">
+    <h2>Testimonials</h2>
+    <p class="subtitle">What Our Clients Say</p>
+
+    <div class="testimonial-box">
+      <p>“Excellent service and amazing quality. The team was very professional and friendly.”</p>
+      <span>⭐⭐⭐⭐⭐</span>
+    </div>
+
+    <div class="testimonial-box">
+      <p>“Great experience from start to finish. Highly recommended!”</p>
+      <span>⭐⭐⭐⭐⭐</span>
+    </div>
+  </div>
+</section>
+
+<section class="cta dark-section1 reveal" id="contact">
+  <div class="container narrow">
+    <h2>Let’s Create Something Amazing Together</h2>
+    <p>Ready to get started? Contact us today and let’s discuss your project.</p>
+
+    <div class="cta-buttons">
+      <a href="tel:+919978333844" class="btn">📞 Call Us</a>
+      <a href="mailto:info.skgroup4@gmail.com" class="btn">📩 Message Us</a>
+      <a href="#" class="btn">📍 Visit Us</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer dark-section1">
+  <div class="container">
+    © 2026 LensCraft Studio. All Rights Reserved.<br>
+    Designed with passion and professionalism.
+  </div>
+</footer>
+
+<script>
+  /* ================= PAGE PRELOADER ================= */
+  window.addEventListener('load', function() {
+    const preloader = document.getElementById('preloader');
+    setTimeout(() => {
+      preloader.classList.add('preloader-hidden');
+    }, 500); 
+  });
+
+  // 1. Existing Reveal Animation
+  const reveals = document.querySelectorAll(".reveal");
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        entry.target.classList.add("active");
+      }
+    });
+  }, { threshold: 0.15 });
+  
+  reveals.forEach(el => observer.observe(el));
+
+  // 2. Fetch Live Database Stats & Calculate All Dynamics
+  async function loadLiveStats() {
+    try {
+      const API_BASE = window.location.origin.includes("localhost") 
+        ? window.location.origin 
+        : "http://localhost:3000";
+
+      const response = await fetch(`${API_BASE}/api/stats`);
+      
+      if (!response.ok) throw new Error("Server not responding");
+      
+      const data = await response.json();
+      
+      // === DYNAMIC MATH CALCULATION === //
+
+      // A. Bookings (Events & Customers)
+      const baseClients = 500; 
+      const baseEvents = 600;
+      const totalBookingsFromDB = data.totalClients || 0;
+
+      // B. Unique Cities (Based on unique pincodes in DB)
+      const baseCities = 15;
+      const newCitiesFromDB = data.uniqueCities || 0;
+
+      // C. Years of Experience (Calculates from 2018 to current year)
+      const startYear = 2018;
+      const currentYear = new Date().getFullYear();
+      const calculatedExperience = currentYear - startYear;
+
+      // === APPLY TO HTML === //
+      document.getElementById("happyCustomers").setAttribute("data-target", baseClients + totalBookingsFromDB);
+      document.getElementById("eventsCovered").setAttribute("data-target", baseEvents + totalBookingsFromDB);
+      document.getElementById("citiesExplored").setAttribute("data-target", baseCities + newCitiesFromDB);
+      document.getElementById("yearsExperience").setAttribute("data-target", calculatedExperience);
+      
+    } catch (error) {
+      console.log("Could not load live stats, using defaults. Error:", error);
+    }
+  }
+
+  // 3. Number Counter Animation
+  const counters = document.querySelectorAll(".counter");
+  let started = false;
+
+  const counterObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && !started) {
+      started = true;
+      counters.forEach(counter => {
+        const updateCount = () => {
+          const target = +counter.getAttribute('data-target');
+          const count = +counter.innerText;
+          const inc = target / 50; 
+
+          if (count < target) {
+            counter.innerText = Math.ceil(count + inc);
+            setTimeout(updateCount, 40);
+          } else {
+            counter.innerText = target;
+          }
+        };
+        updateCount();
+      });
+    }
+  }, { threshold: 0.5 });
+
+  const statsSection = document.querySelector("#stats");
+  if (statsSection) {
+    loadLiveStats().then(() => {
+      counterObserver.observe(statsSection);
+    });
+  }
+</script>
+
+</body>
+</html>

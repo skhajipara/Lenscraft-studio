@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LensCraft Studio - Gallery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    /* ================= STRICT BLACK & WHITE PREMIUM THEME ================= */
+    :root {
+      --bg-dark: #050505;
+      --bg-panel: #111111;
+      --bg-hover: #1a1a1a;
+      --text-main: #ffffff;
+      --text-muted: #888888;
+      --border-color: #2a2a2a;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; display: flex; flex-direction: column; height: 100vh; }
+
+    /* Header */
+    .header { padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); background: var(--bg-dark); z-index: 10;}
+    .logo { font-size: 22px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #fff; text-decoration: none; }
+    .back-btn { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); padding: 6px 15px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; border-radius: 4px; transition: 0.3s; display: none;}
+    .back-btn:hover { color: #fff; border-color: #fff; }
+
+    /* View Containers */
+    .view-container { display: none; flex: 1; flex-direction: column; align-items: center; padding: 40px 20px; animation: fadeIn 0.4s ease; }
+    .view-container.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* --- STEP 1: CATEGORY GRID --- */
+    .section-title { font-size: 24px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 40px; color: var(--text-muted); }
+    
+    .category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; }
+    
+    .card { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 8px; padding: 40px 20px; text-align: center; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .card:hover { border-color: #fff; background: var(--bg-hover); transform: translateY(-5px); }
+    .card h3 { font-size: 18px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+    .card p { font-size: 12px; color: var(--text-muted); margin-top: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* --- STEP 3: GALLERY WORKSPACE --- */
+    #galleryView { padding: 0; justify-content: center; background: var(--bg-dark); position: relative; overflow: hidden; }
+    
+    .media-container { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; position: relative; }
+    .media-item { max-width: 90%; max-height: 80vh; object-fit: contain; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.4s ease-in-out; display: none; }
+    .media-item.active { opacity: 1; display: block; }
+    
+    /* Navigation Arrows (Desktop Only) */
+    .nav-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); color: #fff; width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; cursor: pointer; transition: 0.3s; z-index: 20; backdrop-filter: blur(5px);}
+    .nav-arrow:hover { background: #fff; color: #000; }
+    .nav-arrow.left { left: 30px; }
+    .nav-arrow.right { right: 30px; }
+
+    /* Mobile Swipe Hint */
+    .swipe-hint { display: none; position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #fff; background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 20px; border: 1px solid #555; z-index: 20; animation: pulseHint 2s infinite;}
+    @keyframes pulseHint { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+    .empty-state { color: var(--text-muted); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; display: none; }
+
+    /* ================= RESPONSIVE MEDIA QUERIES ================= */
+    @media (max-width: 768px) {
+      .header { padding: 15px 20px; }
+      .logo { font-size: 18px; }
+      .section-title { font-size: 18px; }
+      .media-item { max-width: 100%; max-height: 70vh; border-radius: 0; }
+      
+      /* Hide arrows on mobile */
+      .nav-arrow { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <a href="index.html" class="logo">LensCraft Studio</a>
+    <button class="back-btn" id="backBtn" onclick="goBack()">&#8592; Back</button>
+  </header>
+
+  <div class="view-container active" id="categoryView">
+    <h2 class="section-title">Select Event Category</h2>
+    <div class="category-grid">
+      <div class="card" onclick="selectCategory('wedding')">
+        <h3>Wedding</h3><p>Cinematic & Traditional</p>
+      </div>
+      <div class="card" onclick="selectCategory('engagement')">
+        <h3>Engagement</h3><p>Ring Ceremonies</p>
+      </div>
+      <div class="card" onclick="selectCategory('prewedding')">
+        <h3>Pre-Wedding</h3><p>Love Stories</p>
+      </div>
+      <div class="card" onclick="selectCategory('birthday')">
+        <h3>Birthday</h3><p>Celebrations</p>
+      </div>
+      <div class="card" onclick="selectCategory('baby')">
+        <h3>Baby & Maternity</h3><p>Studio Shoots</p>
+      </div>
+      <div class="card" onclick="selectCategory('anniversary')">
+        <h3>Anniversary</h3><p>Sharing Journey</p>
+      </div>
+      <div class="card" onclick="selectCategory('concert')">
+        <h3>Concert</h3><p>Feel Vibes</p>
+      </div>
+      <div class="card" onclick="selectCategory('corporate')">
+        <h3>Corporate</h3><p>Events & Seminars</p>
+      </div>
+      <div class="card" onclick="selectCategory('religious')">
+        <h3>Religious</h3><p>Events & Seminars</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="view-container" id="typeView">
+    <h2 class="section-title" id="typeTitle">Choose Media Type</h2>
+    <div class="category-grid" style="max-width: 600px;">
+      <div class="card" onclick="selectType('photo')">
+        <h3>Photography</h3><p>High-Res Images</p>
+      </div>
+      <div class="card" onclick="selectType('video')">
+        <h3>Cinematography</h3><p>4K Video Reels</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="view-container" id="galleryView">
+    <button class="nav-arrow left" onclick="prevMedia()">&#10094;</button>
+    <button class="nav-arrow right" onclick="nextMedia()">&#10095;</button>
+
+    <div class="media-container" id="mediaContainer">
+      <div class="empty-state" id="emptyState">No media found for this selection.</div>
+    </div>
+
+    <div class="swipe-hint" id="swipeHint">Slide to change &harr;</div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin.includes("localhost") ? window.location.origin : "http://localhost:3000";
+    
+    // State variables
+    let currentStep = 1; // 1: Category, 2: Type, 3: Gallery
+    let selectedCategory = '';
+    let selectedType = '';
+    
+    let mediaData = []; 
+    let filteredMedia = []; 
+    let currentIndex = 0;
+    let hintShown = false; // Ensures hint only shows once
+
+    // Elements
+    const categoryView = document.getElementById('categoryView');
+    const typeView = document.getElementById('typeView');
+    const galleryView = document.getElementById('galleryView');
+    const backBtn = document.getElementById('backBtn');
+    const typeTitle = document.getElementById('typeTitle');
+    const mediaContainer = document.getElementById('mediaContainer');
+    const emptyState = document.getElementById('emptyState');
+    const navArrows = document.querySelectorAll('.nav-arrow');
+    const swipeHint = document.getElementById('swipeHint');
+
+    // Load entire database once on boot
+    async function loadGallery() {
+      try {
+        const res = await fetch(`${API_BASE}/api/gallery`);
+        const json = await res.json();
+        if (json.status === 'success') {
+          mediaData = json.data;
+        }
+      } catch (err) {
+        console.error("Failed to load gallery", err);
+      }
+    }
+    loadGallery();
+
+    // STEP FLOW LOGIC
+    function selectCategory(category) {
+      selectedCategory = category;
+      currentStep = 2;
+      typeTitle.innerText = `${category.toUpperCase()} - Choose Format`;
+      updateUI();
+    }
+
+    function selectType(type) {
+      selectedType = type;
+      currentStep = 3;
+      updateUI();
+      launchGallery();
+    }
+
+    function goBack() {
+      // 1. Mobile/UI Logic: If currently in Fullscreen, first click exits fullscreen.
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(err => console.log(err));
+        return; // Stop here, a second click will run the code below to go back
+      }
+
+      // 2. Normal Back Logic
+      if (currentStep === 3) currentStep = 2;
+      else if (currentStep === 2) currentStep = 1;
+      updateUI();
+    }
+
+    function updateUI() {
+      categoryView.classList.remove('active');
+      typeView.classList.remove('active');
+      galleryView.classList.remove('active');
+      
+      if (currentStep === 1) {
+        categoryView.classList.add('active');
+        backBtn.style.display = 'none';
+      } else if (currentStep === 2) {
+        typeView.classList.add('active');
+        backBtn.style.display = 'block';
+        
+        // Stop any videos playing when going back
+        const videos = mediaContainer.querySelectorAll('video');
+        videos.forEach(v => v.pause());
+
+      } else if (currentStep === 3) {
+        galleryView.classList.add('active');
+        backBtn.style.display = 'block';
+      }
+    }
+
+    // GALLERY LOGIC
+    function launchGallery() {
+      // Handles case insensitivity so "Photo" matches "photo"
+      filteredMedia = mediaData.filter(item => 
+        String(item.category).toLowerCase() === selectedCategory.toLowerCase() && 
+        String(item.type).toLowerCase() === selectedType.toLowerCase()
+      );
+      currentIndex = 0;
+      renderMedia();
+    }
+
+    function renderMedia() {
+      const existingMedia = mediaContainer.querySelectorAll('.media-item');
+      existingMedia.forEach(el => el.remove());
+
+      if (filteredMedia.length === 0) {
+        emptyState.style.display = 'block';
+        navArrows.forEach(arr => arr.style.display = 'none');
+        swipeHint.style.display = 'none';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      
+      // Manage Arrows (Desktop) & Swipe Hint (Mobile)
+      if (window.innerWidth > 768) {
+        navArrows.forEach(arr => arr.style.display = filteredMedia.length > 1 ? 'flex' : 'none');
+        swipeHint.style.display = 'none';
+      } else {
+        navArrows.forEach(arr => arr.style.display = 'none'); // Ensure hidden on mobile
+        // Show swipe hint ONLY ONCE if multiple items exist
+        if (filteredMedia.length > 1 && !hintShown) {
+          swipeHint.style.display = 'block';
+          // Hide hint automatically after 4 seconds
+          setTimeout(() => { swipeHint.style.display = 'none'; hintShown = true; }, 4000);
+        }
+      }
+
+      const item = filteredMedia[currentIndex];
+      let mediaEl;
+
+      // Ensure API_BASE is attached for images to load properly
+      const mediaUrl = item.url.startsWith('http') ? item.url : API_BASE + item.url;
+      const itemType = String(item.type).toLowerCase();
+
+      if (itemType === 'photo') {
+        mediaEl = document.createElement('img');
+        mediaEl.src = mediaUrl;
+        
+        // Optional: Let users enter fullscreen by double-clicking images
+        mediaEl.addEventListener('dblclick', () => {
+          if (!document.fullscreenElement) {
+            mediaEl.requestFullscreen().catch(err => console.log(err));
+          }
+        });
+
+      } else if (itemType === 'video') {
+        mediaEl = document.createElement('video');
+        mediaEl.src = mediaUrl;
+        mediaEl.controls = true;
+        mediaEl.autoplay = true;
+        mediaEl.muted = false; 
+        
+        // Video Ended Logic: Automatically exit fullscreen when the video finishes
+        mediaEl.addEventListener('ended', () => {
+          if (document.fullscreenElement) {
+            document.exitFullscreen().catch(err => console.log(err));
+          }
+        });
+      }
+
+      mediaEl.className = 'media-item active';
+      mediaContainer.appendChild(mediaEl);
+    }
+
+    function nextMedia() {
+      if (filteredMedia.length <= 1) return;
+      currentIndex = (currentIndex + 1) % filteredMedia.length;
+      renderMedia();
+      hideHint();
+    }
+
+    function prevMedia() {
+      if (filteredMedia.length <= 1) return;
+      currentIndex = (currentIndex - 1 + filteredMedia.length) % filteredMedia.length;
+      renderMedia();
+      hideHint();
+    }
+
+    function hideHint() {
+      if (!hintShown) {
+        swipeHint.style.display = 'none';
+        hintShown = true;
+      }
+    }
+
+    // Touch Swipe Logic for Mobile
+    let touchstartX = 0;
+    let touchendX = 0;
+
+    galleryView.addEventListener('touchstart', e => {
+      touchstartX = e.changedTouches[0].screenX;
+    });
+
+    galleryView.addEventListener('touchend', e => {
+      touchendX = e.changedTouches[0].screenX;
+      handleSwipe();
+    });
+
+    function handleSwipe() {
+      const threshold = 50; 
+      if (touchendX < touchstartX - threshold) {
+        nextMedia();
+      }
+      if (touchendX > touchstartX + threshold) {
+        prevMedia();
+      }
+    }
+
+    // ================= NEW: DESKTOP KEYBOARD CONTROLS =================
+    document.addEventListener('keydown', (e) => {
+      // 1. Arrow Keys: Slide Left / Right
+      if (currentStep === 3) {
+        if (e.key === 'ArrowRight') nextMedia();
+        if (e.key === 'ArrowLeft') prevMedia();
+      }
+      
+      // 2. Escape Key Logic
+      if (e.key === 'Escape') {
+        // The browser natively handles the *first* ESC press to exit fullscreen.
+        // If we press ESC and we are NOT in fullscreen, it triggers the "second click" behavior (go back).
+        if (!document.fullscreenElement && currentStep > 1) {
+          goBack();
+        }
+      }
+    });
+
+  </script>
+</body>
+</html>

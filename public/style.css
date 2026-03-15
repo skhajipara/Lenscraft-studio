@@ -1,0 +1,960 @@
+/* ================= RESET ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #0b0b0f;
+  color: #fff;
+  line-height: 1.6;
+}
+
+/* ================= CONTAINER ================= */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* ================= SECTIONS ================= */
+.dark-section {
+  background: #343333;
+  color: #fff;
+  padding: 100px 0;
+}
+
+.dark-section1 {
+  background: #0b0b0f;
+  color: #fff;
+  padding: 100px 0;
+}
+
+.light-section {
+  background: #f4f4f6;
+  color: #111;
+  padding: 100px 0;
+}
+
+/* ================= HEADER ================= */
+.header {
+  background: #050508;
+  padding: 20px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.nav a {
+  margin-left: 25px;
+  text-decoration: none;
+  color: #ddd;
+  transition: 0.3s;
+}
+
+.nav a:hover {
+  color: #95b191;
+}
+
+
+/* ================= HERO SECTION ================= */
+
+.hero {
+  text-align: center;
+  padding: 140px 20px 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90vh;
+}
+
+.hero .container {
+  max-width: 900px;
+}
+
+/* Responsive Premium Heading */
+.hero h2 {
+  font-size: clamp(28px, 4.5vw, 48px);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 18px;
+  letter-spacing: -0.5px;
+}
+
+/* Responsive Subheading */
+.hero p {
+  font-size: clamp(14px, 2vw, 18px);
+  margin-bottom: 30px;
+  opacity: 0.8;
+  letter-spacing: 1px;
+}
+
+/* Button spacing */
+.hero .btn {
+  padding: 12px 28px;
+  font-size: 15px;
+}
+
+/* ================= SERVICES ================= */
+.services-wrapper {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  margin-top: 50px;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: #ffffff;
+  color: #111;
+  padding: 30px;
+  width: 300px;
+  border-radius: 15px;
+  transition: 0.4s;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.price {
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.wedding { border-top: 4px solid #95b191; }
+.prewedding { border-top: 4px solid #219ebc; }
+.baby { border-top: 4px solid #e63946; }
+
+/* ================= BUTTON ================= */
+.btn {
+  display: inline-block;
+  padding: 10px 22px;
+  background: #111;
+  color: #fff;
+  border-radius: 25px;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background: #95b191;
+  color: #000;
+}
+
+
+/* ================= CTA SECTION ================= */
+
+.cta {
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.cta h2 {
+  font-size: clamp(24px, 4vw, 36px);
+  margin-bottom: 15px;
+  line-height: 1.3;
+}
+
+.cta p {
+  font-size: clamp(14px, 2vw, 18px);
+  margin-bottom: 30px;
+  opacity: 0.8;
+}
+
+/* Button Container */
+.cta-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap; /* important */
+}
+
+/* Button Style */
+.cta .btn {
+  min-width: 160px;
+  text-align: center;
+  padding: 12px 20px;
+  font-size: 15px;
+  border-radius: 30px;
+  transition: 0.3s ease;
+}
+
+/* Hover */
+.cta .btn:hover {
+  transform: translateY(-5px);
+}
+
+/* ================= FOOTER ================= */
+.footer {
+  text-align: center;
+  padding: 40px 0;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* ================= ANIMATION ================= */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: 1s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Services Button Row */
+.services-btn {
+  margin-top: 50px;
+  text-align: center;
+}
+
+/* Enhanced Card */
+.card {
+  background: #ffffff;
+  color: #111;
+  padding: 30px;
+  width: 300px;
+  border-radius: 15px;
+  transition: 0.4s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Lift + Rainbow Glow */
+.card:hover {
+  transform: translateY(-15px);
+  box-shadow:
+    0 0 10px #ff0000,
+    0 0 15px #ff7f00,
+    0 0 20px #ffff00,
+    0 0 25px #00ff00,
+    0 0 30px #0000ff,
+    0 0 35px #4b0082,
+    0 0 10px #9400d3;
+}
+/* Make cards clickable without blue link style */
+.card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.card-link:hover {
+  text-decoration: none;
+}
+
+/* Button Upgrade */
+.main-btn {
+  padding: 12px 30px;
+  font-size: 16px;
+  transition: 0.3s ease;
+}
+
+.main-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+
+
+/* ================= RESPONSIVE ================= */
+
+/* 📱 Mobile */
+@media (max-width:768px){
+
+  .header .container {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: row;   /* Keep in one row */
+    justify-content: center;
+    flex-wrap: wrap;       /* If small screen, wrap nicely */
+    gap: 15px;
+  }
+
+  .nav a {
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .services-wrapper{
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .card{
+    width: 100%;
+    max-width: 350px;
+  }
+  
+
+}
+
+/* 📱 Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+  .hero h2 {
+    font-size: 36px;
+  }
+
+  .card {
+    width: 260px;
+  }
+}
+
+/* 🖥 Large Screens */
+@media (min-width: 1440px) {
+
+  .container {
+    max-width: 1400px;
+  }
+
+  .hero h2 {
+    font-size: 60px;
+  }
+
+  .card {
+    width: 340px;
+  }
+}
+
+
+
+/* Board sections */
+.board {
+  padding: 100px 0;
+  text-align: center;
+}
+
+.narrow {
+  max-width: 850px;
+  margin: auto;
+}
+
+.offer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
+  gap: 20px;
+  margin: 40px 0;
+}
+
+.offer-grid div {
+  padding: 20px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  transition: 0.4s;
+}
+
+.light-section .offer-grid div {
+  background: #ffffff;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.offer-grid div:hover {
+  transform: translateY(-8px);
+}
+
+.subtitle {
+  margin: 15px 0 25px;
+  opacity: 0.7;
+}
+
+.board-note {
+  margin-top: 20px;
+  font-weight: 500;
+}
+
+.why-list {
+  list-style: none;
+  padding: 0;
+  margin: 30px 0;
+}
+
+.why-list li {
+  padding: 8px 0;
+  font-size: 18px;
+}
+
+.testimonial-box {
+  padding: 25px;
+  margin: 20px auto;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.05);
+}
+
+.light-section .testimonial-box {
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* Responsive */
+@media (max-width:768px){
+  .offer-grid{
+    grid-template-columns:1fr;
+  }
+  .board{
+    padding:70px 20px;
+  }
+}
+
+
+
+
+/* ================= PACKAGES PAGE ================= */
+
+.packages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+  gap: 30px;
+  margin-top: 50px;
+}
+
+.package-card {
+  background: #1a1a22;
+  padding: 30px;
+  border-radius: 15px;
+  transition: 0.4s ease;
+  color: #fff;
+  text-align: left;
+}
+
+.package-card h3 {
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+.package-card ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.package-card ul li {
+  margin-bottom: 8px;
+}
+
+/* Hover Effect (turn white) */
+.package-card:hover {
+  background: #ffffff;
+  color: #111;
+  transform: translateY(-10px);
+}
+
+.package-card:hover .btn {
+  background: #111;
+  color: #fff;
+}
+
+/* Premium Highlight */
+.premium {
+  border: 2px solid gold;
+}
+
+/* Custom Package Section */
+.custom-package {
+  margin-top: 80px;
+  text-align: center;
+}
+
+.custom-package p {
+  margin: 15px 0 25px;
+  opacity: 0.8;
+}
+
+/* Responsive */
+@media(max-width:768px){
+  .packages-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* ================= PACKAGE PAGE TITLES ================= */
+
+.packages-page .section-title,
+.packages-page .subtitle {
+  text-align: center;
+}
+
+/* Better spacing */
+.packages-page .section-title {
+  margin-bottom: 10px;
+}
+
+.packages-page .subtitle {
+  margin-bottom: 30px;
+  opacity: 0.8;
+}
+
+/* ================= BOOKING PAGE ================= */
+
+.booking-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.booking-content h2 {
+  font-size: clamp(26px, 4vw, 40px);
+  margin-bottom: 15px;
+}
+
+.booking-content p {
+  font-size: clamp(14px, 2vw, 18px);
+  margin-bottom: 35px;
+  opacity: 0.8;
+}
+
+.stat-item h3 {
+  font-size: 22px;
+  color: #fffdf9;
+  margin-bottom: 10px;
+  font-weight: 700;
+  /* 👇 This adds a shiny gold glow around the numbers */
+  text-shadow: 0 0 10px rgba(58, 58, 58, 0.6), 0 0 20px rgba(255, 183, 3, 0.4); 
+}
+
+/* ================= RESPONSIVE ================= */
+
+/* 📱 Mobile (up to 768px) */
+@media (max-width: 768px) {
+
+  .booking-section {
+    padding: 40px 15px;
+  }
+
+  .booking-content {
+    width: 100%;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .cta-buttons .btn {
+    width: 100%;
+    max-width: 280px;
+    margin: auto;
+  }
+
+}
+
+/* 📲 Tablet (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+  .booking-section {
+    padding: 60px 20px;
+  }
+
+  .cta-buttons {
+    gap: 18px;
+  }
+
+  .cta-buttons .btn {
+    min-width: 180px;
+  }
+
+}
+
+/* 🖥 Desktop (1025px and above) */
+@media (min-width: 1025px) {
+
+  .booking-section {
+    padding: 80px 0;
+  }
+
+  .cta-buttons {
+    gap: 25px;
+  }
+
+  .cta-buttons .btn {
+    min-width: 200px;
+  }
+
+}
+
+
+
+
+/* ================= BOOKING PAGE ================= */
+
+.booking-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.booking-form {
+  margin-top: 40px;
+  display: grid;
+  gap: 20px;
+}
+
+/* Form Group */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  
+}
+
+.form-group label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  opacity: 0.8;
+  
+}
+
+.form-group input {
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #f6eded;
+  color: #000000;
+  transition: 0.3s;
+}
+
+/* Input Focus Animation */
+.form-group input:focus {
+  outline: none;
+  border-color: #95b191;
+  box-shadow: 0 0 10px rgba(255,183,3,0.4);
+}
+
+/* Confirmation Button */
+.confirm-btn {
+  margin-top: 20px;
+  font-size: 16px;
+  padding: 14px;
+  width: 100%;
+}
+
+/* ================= PACKAGES MAIN PAGE ================= */
+
+.packages-main {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.packages-content {
+  width: 100%;
+  max-width: 900px;
+  margin: auto;
+}
+
+.packages-buttons {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  flex-wrap: wrap;
+}
+
+/* ================= CENTER HEADER & FOOTER ================= */
+
+.header-center,
+.packages-header .container {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center;
+  text-align: center;
+}
+
+.footer-center,
+.packages-footer {
+  text-align: center !important;
+}
+
+/* ================= RESPONSIVE ================= */
+
+/* 📱 Mobile */
+@media (max-width: 768px) {
+
+  .packages-main {
+    padding: 70px 15px;
+  }
+
+  .packages-buttons {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .packages-buttons .btn {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .logo {
+    font-size: 20px;
+    text-align: center;
+  }
+
+}
+
+/* 📲 Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+  .packages-main {
+    padding: 90px 20px;
+  }
+
+  .packages-buttons {
+    gap: 20px;
+  }
+
+  .logo {
+    text-align: center;
+  }
+
+}
+
+/* 🖥 Desktop */
+@media (min-width: 1025px) {
+
+  .packages-main {
+    padding: 120px 20px;
+  }
+
+}
+
+
+/* ================= PRELOADER ================= */
+#preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0b0b0f; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; 
+  transition: opacity 1.5s ease, visibility 1.5s ease;
+}
+
+/* Base camera size and glow */
+.camera-icon svg {
+  width: 70px;
+  height: 70px;
+  margin-bottom: 15px;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); 
+}
+
+/* 1. Animate Camera Body (Continuous Forward Draw) */
+.draw-path {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: drawForward 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* 2. Animate Camera Lens (Slightly delayed) */
+.draw-lens {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: drawForward 2s cubic-bezier(0.4, 0, 0.2, 1) infinite 0.2s;
+}
+
+/* 3. The Flash dot pops exactly when drawing finishes */
+.flash-pulse {
+  opacity: 0;
+  transform-origin: 18px 10px;
+  animation: flashPop 2s ease-out infinite;
+}
+
+/* 4. TEXT LEFT-TO-RIGHT WIPE EFFECT */
+.loader-text {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  /* Base text color (faint grey) */
+  color: rgba(255, 255, 255, 0.15);
+  /* Overlay filling color (pure white) */
+  background: linear-gradient(90deg, #ffffff 0%, #ffffff 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  background-repeat: no-repeat;
+  background-size: 0% 100%; /* Starts at 0 width (hidden) */
+  animation: textWipe 2s ease-in-out infinite;
+}
+
+/* --- ANIMATION KEYFRAMES --- */
+
+/* Traces forward, holds, then fades out to restart smoothly */
+@keyframes drawForward {
+  0% { stroke-dashoffset: 120; opacity: 0; }
+  10% { opacity: 1; }
+  60% { stroke-dashoffset: 0; opacity: 1; }
+  80% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+/* Flash triggers exactly at the 60% mark when the camera finishes drawing */
+@keyframes flashPop {
+  0%, 55% { opacity: 0; transform: scale(0); filter: drop-shadow(0 0 0px #fff); }
+  60% { opacity: 1; transform: scale(1.5); filter: drop-shadow(0 0 8px #ffffff); }
+  80%, 100% { opacity: 0; transform: scale(0); }
+}
+
+/* Animates the white background gradient from left (0%) to right (100%) */
+@keyframes textWipe {
+  0% { background-size: 0% 100%; opacity: 1; }
+  60% { background-size: 100% 100%; opacity: 1; }
+  80% { background-size: 100% 100%; opacity: 1; }
+  100% { background-size: 100% 100%; opacity: 0; }
+}
+
+.preloader-hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+
+/* ================= SUBMIT OVERLAY & CUSTOM ALERT ================= */
+.hidden-overlay {
+  opacity: 0;
+  visibility: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 10, 12, 0.85); /* Richer, softer dark overlay */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+  backdrop-filter: blur(8px); /* Increased blur for a premium frosted glass look */
+}
+
+.show-overlay {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Custom Alert Box - Premium Aesthetic */
+.alert-box {
+  background: #18181b; /* Premium soft off-black */
+  border: 1px solid rgba(255, 255, 255, 0.08); /* Very delicate subtle border */
+  border-top: 4px solid #95b191; /* Elegant gold brand accent on top */
+  padding: 40px 35px;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); /* Deep, modern shadow */
+  
+  /* Subtler, smoother animation start position */
+  transform: scale(0.95) translateY(10px); 
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.show-overlay .alert-box {
+  transform: scale(1) translateY(0); /* Smooth floating pop-in */
+}
+
+.alert-box h3 {
+  color: #ffffff; /* Crisp white for a clean, modern look */
+  margin-bottom: 12px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.alert-box p {
+  color: #a1a1aa; /* Soft, readable slate gray */
+  margin-bottom: 30px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+
+
+/* ================= DROPDOWN SELECT STYLING ================= */
+.form-group select {
+  width: 100%;
+  padding: 12px 15px;
+  margin-top: 8px;
+  background-color: #fbfbfb; /* Matches your dark inputs */
+  border: 1px solid #333;
+  color: #ffffff;
+  border-radius: 6px;
+  font-size: 15px;
+  color: #000;
+  outline: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  
+  /* Hides the ugly default browser arrow */
+  appearance: none; 
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  
+  /* Adds a custom premium gold arrow */
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23ffb703%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px top 50%;
+  background-size: 12px auto;
+}
+
+/* Make it glow gold when clicked */
+.form-group select:focus {
+  border-color: #95b191;
+  box-shadow: 0 0 8px rgba(255, 183, 3, 0.2);
+}
+
+/* Style for when it is locked (Waiting for Pincode) */
+.form-group select:disabled {
+  background-color: #ffffff;
+  color: #666666;
+  cursor: not-allowed;
+  border: 1px solid #fff9f9;
+  background-image: none; /* Hides the arrow when locked */
+}
+
+/* Dropdown option list styling */
+.form-group select option {
+  background-color: #ffffff;
+  color: #000;
+  padding: 10px;
+}

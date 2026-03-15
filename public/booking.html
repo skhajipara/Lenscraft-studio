@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Book Your Package - LensCraft Studio</title>
+  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><style>path,circle{stroke:%23111111}.flash{fill:%23111111;stroke:none}@media (prefers-color-scheme: dark){path,circle{stroke:%23ffffff}.flash{fill:%23ffffff}}</style><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle><circle class="flash" cx="18" cy="10" r="1"></circle></svg>' type="image/svg+xml">  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ================= LIGHT THEME FORM OVERRIDES ================= */
+    .section-title {
+      color: #111111;
+    }
+    .light-section .subtitle {
+      color: #555555;
+    }
+    #bookingForm .form-group label {
+      color: #111111 !important; 
+      font-weight: 600;
+    }
+    #bookingForm .form-group input,
+    #bookingForm .form-group select {
+      background-color: #ffffff !important;
+      color: #333333 !important;
+      border: 1px solid #cccccc !important;
+      outline: none;
+      padding: 12px 15px;
+      border-radius: 8px;
+      transition: 0.3s;
+      width: 100%;
+    }
+    #bookingForm .form-group input:focus,
+    #bookingForm .form-group select:focus {
+      border-color: #ffb703 !important;
+      box-shadow: 0 0 8px rgba(255, 183, 3, 0.3) !important;
+    }
+    /* Special styling for the read-only Booking ID box on light theme */
+    #bookingForm #bookingId {
+      background-color: #fffaf0 !important;
+      color: #b48600 !important; /* Darker gold for readability */
+      border-color: #ffe4a0 !important;
+      font-size: 16px;
+    }
+    #bookingForm #amountField {
+      background-color: #f9f9f9 !important;
+      color: #2ecc71 !important; /* Green for money */
+      font-weight: bold;
+      font-size: 16px;
+      cursor: not-allowed;
+    }
+    #bookingForm .form-group select:disabled {
+      background-color: #f9f9f9 !important;
+      color: #888888 !important;
+      border: 1px solid #eeeeee !important;
+    }
+  </style>
+</head>
+<body>
+
+<div id="preloader">
+  <div class="camera-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path class="draw-path" d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+      <circle class="draw-lens" cx="12" cy="13" r="4"></circle>
+      <circle class="flash-pulse" cx="18" cy="10" r="1" fill="#ffffff" stroke="none"></circle>
+    </svg>
+  </div>
+  <h2 class="loader-text">LensCraft</h2>
+</div>
+
+<header class="header">
+  <div class="container header-center">
+    <a href="index.html" style="text-decoration: none; color: inherit;">
+      <h1 class="logo">LensCraft Studio</h1>
+    </a>
+  </div>
+</header>
+
+<section class="light-section booking-page" style="padding-top: 120px; padding-bottom: 80px;">
+  <div class="container narrow reveal">
+
+    <h2 class="section-title">Book Your Package</h2>
+    <p class="subtitle" style="margin-bottom: 40px;">Fill the details below to confirm your booking</p>
+
+    <form id="bookingForm" class="booking-form">
+      <div class="form-group">
+        <label>Booking ID</label>
+        <input type="text" id="bookingId" readonly style="font-weight: bold;">
+      </div>
+
+      <div class="form-group">
+        <label>Select Your Package</label>
+        <select id="packageSelect" required style="appearance: auto;">
+          <option value="" disabled selected>Loading packages from database...</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Total Amount</label>
+        <input type="text" id="amountField" readonly placeholder="Auto-calculates based on package">
+      </div>
+
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="fullName" required>
+      </div>
+
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" id="phoneNumber" pattern="[0-9]{10}" maxlength="10" required>
+      </div>
+
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="emailAddress" required>
+      </div>
+
+      <div class="form-group">
+        <label>From Date & Time</label>
+        <input type="datetime-local" id="fromDate" required>
+      </div>
+
+      <div class="form-group">
+        <label>To Date & Time</label>
+        <input type="datetime-local" id="toDate" required>
+      </div>
+
+      <div class="form-group">
+        <label>Pincode</label>
+        <input type="text" id="pincode" pattern="[0-9]{6}" maxlength="6" required placeholder="Enter 6-digit Pincode">
+        <small id="pincodeMsg" style="color: #d97706; margin-top: 5px; font-size: 13px; font-weight: 600;"></small>
+      </div>
+
+      <div class="form-group">
+        <label>Area, District & State</label>
+        <select id="cityState" required disabled style="appearance: auto;">
+          <option value="">Auto-fills after entering Pincode</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Exact Event Venue / Address</label>
+        <input type="text" id="eventLocation" required placeholder="E.g., Taj Hotel, MG Road...">
+      </div>
+
+      <button type="submit" class="btn main-btn confirm-btn" id="submitBtn">
+        Send Confirmation Request
+      </button>
+    </form>
+
+  </div>
+</section>
+
+<footer class="footer dark-section">
+  <div class="container">
+    © 2026 LensCraft Studio. All Rights Reserved.
+  </div>
+</footer>
+
+<div id="submitOverlay" class="hidden-overlay">
+  <div class="camera-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path class="draw-path" d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+      <circle class="draw-lens" cx="12" cy="13" r="4"></circle>
+      <circle class="flash-pulse" cx="18" cy="10" r="1" fill="#ffffff" stroke="none"></circle>
+    </svg>
+  </div>
+  <h2 class="loader-text">Processing Request...</h2>
+</div>
+
+<div id="customAlert" class="hidden-overlay">
+  <div class="alert-box">
+    <h3 id="alertTitle">Status</h3>
+    <p id="alertMessage">Message goes here.</p>
+    <button class="btn main-btn" onclick="closeAlert()" style="width: 100%;">OK</button>
+  </div>
+</div>
+
+<script>
+/* ================= PAGE PRELOADER ================= */
+window.addEventListener('load', function() {
+  const preloader = document.getElementById('preloader');
+  setTimeout(() => {
+    preloader.classList.add('preloader-hidden');
+  }, 500); 
+});
+
+/* ================= SAFE API BASE ================= */
+const API_BASE = window.location.origin.includes("localhost") ? window.location.origin : "http://localhost:3000";
+
+/* ================= BOOKING ID GENERATOR ================= */
+function generateBookingID() {
+  const d = new Date();
+  const yy = String(d.getFullYear()).slice(-2); 
+  const mm = String(d.getMonth() + 1).padStart(2, '0'); 
+  const dd = String(d.getDate()).padStart(2, '0'); 
+  const random4 = Math.floor(1000 + Math.random() * 9000); 
+  return `LCS${yy}${mm}${dd}${random4}`;
+}
+document.getElementById("bookingId").value = generateBookingID();
+
+/* ================= DATE LIMIT ================= */
+const now = new Date();
+const isoNow = now.toISOString().slice(0,16);
+document.getElementById("fromDate").min = isoNow;
+document.getElementById("toDate").min = isoNow;
+
+/* ================= DYNAMIC PACKAGE FETCHING ================= */
+async function loadPackagesIntoDropdown() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const selectedPkgId = urlParams.get('pkgId'); // E.g., booking.html?pkgId=2
+  
+  const selectEl = document.getElementById("packageSelect");
+  const amountEl = document.getElementById("amountField");
+
+  try {
+    const res = await fetch(`${API_BASE}/api/packages`);
+    const json = await res.json();
+    const pkgs = json.data || [];
+
+    selectEl.innerHTML = '<option value="" disabled selected>Please select a package</option>';
+
+    pkgs.forEach(p => {
+      const option = document.createElement("option");
+      // Value saved to DB will be something like "Wedding - Premium Wedding"
+      option.value = `${p.category.toUpperCase()} - ${p.title}`;
+      option.dataset.price = p.price; // Store price hidden in the HTML element
+      option.textContent = `${p.title} (₹${p.price.toLocaleString('en-IN')})`;
+
+      // If they clicked a specific package on the previous page, auto-select it!
+      if (selectedPkgId && p.id == selectedPkgId) {
+        option.selected = true;
+        amountEl.value = "₹" + p.price.toLocaleString('en-IN');
+      }
+
+      selectEl.appendChild(option);
+    });
+
+    // When the user changes the dropdown manually, update the price box
+    selectEl.addEventListener('change', function() {
+      const selectedOption = this.options[this.selectedIndex];
+      if (selectedOption.dataset.price) {
+        amountEl.value = "₹" + Number(selectedOption.dataset.price).toLocaleString('en-IN');
+      }
+    });
+
+  } catch (error) {
+    console.error("Failed to fetch packages", error);
+    selectEl.innerHTML = '<option value="" disabled selected>Error loading packages</option>';
+  }
+}
+loadPackagesIntoDropdown();
+
+
+/* ================= PINCODE DROPDOWN FETCH ================= */
+document.getElementById("pincode").addEventListener("input", async function() {
+  const pin = this.value;
+  const msg = document.getElementById("pincodeMsg");
+  const cityStateDropdown = document.getElementById("cityState");
+  
+  if(pin.length === 6) {
+    msg.innerText = "Searching online for locations...";
+    cityStateDropdown.innerHTML = '<option value="">Loading areas...</option>';
+    let placeFound = false;
+    
+    try {
+      const response1 = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+      const data1 = await response1.json();
+      
+      if(data1 && data1[0] && data1[0].Status === "Success") {
+        cityStateDropdown.innerHTML = '<option value="" disabled selected>Select your specific area</option>';
+        data1[0].PostOffice.forEach(place => {
+          const option = document.createElement("option");
+          const fullPlaceText = `${place.Name}, ${place.District}, ${place.State}`;
+          option.value = fullPlaceText;
+          option.textContent = fullPlaceText;
+          cityStateDropdown.appendChild(option);
+        });
+        placeFound = true;
+      }
+    } catch(e) {}
+
+    if (!placeFound) {
+      try {
+        const response2 = await fetch(`https://api.zippopotam.us/IN/${pin}`);
+        if (response2.ok) {
+          const data2 = await response2.json();
+          cityStateDropdown.innerHTML = '<option value="" disabled selected>Select your specific area</option>';
+          data2.places.forEach(place => {
+            const option = document.createElement("option");
+            const fullPlaceText = `${place["place name"]}, ${place.state}`;
+            option.value = fullPlaceText;
+            option.textContent = fullPlaceText;
+            cityStateDropdown.appendChild(option);
+          });
+          placeFound = true;
+        }
+      } catch(e) {}
+    }
+
+    if (placeFound) {
+      msg.innerText = "✅ Locations found! Please select from the dropdown.";
+      cityStateDropdown.disabled = false;
+      setTimeout(() => msg.innerText = "", 4000); 
+    } else {
+      msg.innerText = "❌ Invalid Pincode or servers down.";
+      resetDropdown();
+    }
+  } else {
+    msg.innerText = "";
+    resetDropdown();
+  }
+
+  function resetDropdown() {
+    cityStateDropdown.innerHTML = '<option value="">Auto-fills after entering Pincode</option>';
+    cityStateDropdown.disabled = true;
+  }
+});
+
+/* ================= CUSTOM ALERT FUNCTIONS ================= */
+const submitOverlay = document.getElementById('submitOverlay');
+const customAlert = document.getElementById('customAlert');
+const alertTitle = document.getElementById('alertTitle');
+const alertMessage = document.getElementById('alertMessage');
+let redirectOnClose = false;
+
+function showCustomAlert(title, message, redirect = false) {
+  alertTitle.innerText = title;
+  alertMessage.innerText = message;
+  redirectOnClose = redirect; 
+  submitOverlay.classList.remove('show-overlay'); 
+  customAlert.classList.add('show-overlay'); 
+}
+
+function closeAlert() {
+  customAlert.classList.remove('show-overlay');
+  if (redirectOnClose) {
+    window.location.href = "index.html";
+  }
+}
+
+/* ================= FORM SUBMIT ================= */
+document.getElementById("bookingForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+
+  const bookingId = document.getElementById("bookingId").value;
+  const pincode = document.getElementById("pincode").value.trim();
+  const name = document.getElementById("fullName").value.trim();
+  const phone = document.getElementById("phoneNumber").value.trim();
+  const email = document.getElementById("emailAddress").value.trim();
+  const fromValue = document.getElementById("fromDate").value;
+  const toValue = document.getElementById("toDate").value;
+  const venue = document.getElementById("eventLocation").value.trim();
+  const cityState = document.getElementById("cityState").value.trim();
+  const fullLocation = `${venue}, ${cityState} - ${pincode}`;
+
+  const packageNameValue = document.getElementById("packageSelect").value;
+  const amountValue = document.getElementById("amountField").value;
+
+  const from = new Date(fromValue);
+  const to = new Date(toValue);
+  const nowTime = new Date();
+
+  if(!name || !phone || !email || !fromValue || !toValue || !venue || !cityState || !packageNameValue){
+    showCustomAlert("Missing Fields", "All fields must be filled before submitting.");
+    return;
+  }
+  if(from < nowTime || to < nowTime){
+    showCustomAlert("Invalid Date", "We can't book a past date & time slot.");
+    return;
+  }
+  if(from.getTime() === to.getTime()){
+    showCustomAlert("Invalid Time", "From & To time can't be exactly the same.");
+    return;
+  }
+  if(to < from){
+    showCustomAlert("Invalid Time", "End time must be after the start time.");
+    return;
+  }
+
+  submitOverlay.classList.add('show-overlay');
+  const minDelay = new Promise(resolve => setTimeout(resolve, 2000));
+
+  const fetchRequest = fetch(`${API_BASE}/api/book`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      bookingId, pincode, name, phone, email,
+      packageName: packageNameValue,
+      amount: amountValue,
+      from: fromValue, to: toValue,
+      location: fullLocation
+    })
+  }).then(res => {
+    if(!res.ok) throw new Error("Server error");
+    return res.json();
+  });
+
+  try {
+    const [result] = await Promise.all([fetchRequest, minDelay]);
+
+    if(result.status === "booked"){
+      showCustomAlert("No Teams Available", "We apologize, but all our photography teams are already booked for this specific time slot. Please select a different time or date.");
+    }
+    else if(result.status === "success"){
+      showCustomAlert("Booking Confirmed!", "Your request has been saved securely. Check your email for full confirmation details.", true);
+      document.getElementById("bookingId").value = generateBookingID();
+      document.getElementById("bookingForm").reset();
+    }
+    else if(result.status === "email_error"){
+      showCustomAlert("Booking Saved", "Your booking was saved, but we couldn't send the confirmation email. Our team will contact you shortly.", true);
+    }
+    else{
+      showCustomAlert("Error", "A server error occurred. Please try again.");
+    }
+
+  } catch(error){
+    await minDelay;
+    showCustomAlert("Connection Error", "Unable to connect to the server. Make sure your server is running.");
+  }
+});
+
+/* ================= REVEAL ANIMATION ================= */
+const revealElement = document.querySelector(".reveal");
+setTimeout(() => {
+  revealElement.classList.add("active");
+}, 200);
+</script>
+</body>
+</html>

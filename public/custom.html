@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Custom Package Quote - LensCraft Studio</title>
+  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><style>path,circle{stroke:%23111111}.flash{fill:%23111111;stroke:none}@media (prefers-color-scheme: dark){path,circle{stroke:%23ffffff}.flash{fill:%23ffffff}}</style><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle><circle class="flash" cx="18" cy="10" r="1"></circle></svg>' type="image/svg+xml">  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ================= LIGHT THEME FORM OVERRIDES ================= */
+    .form-section-title {
+      color: #ffb703;
+      font-size: 18px;
+      margin: 35px 0 15px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #dddddd; 
+      letter-spacing: 0.5px;
+    }
+    
+    #customForm .form-group input:not([type="checkbox"]),
+    #customForm .form-group select,
+    #customForm .form-group textarea.custom-textarea {
+      background-color: #ffffff !important;
+      color: #333333 !important;
+      border: 1px solid #cccccc !important;
+      outline: none;
+    }
+    #customForm .form-group input:not([type="checkbox"]):focus,
+    #customForm .form-group select:focus,
+    #customForm .form-group textarea.custom-textarea:focus {
+      border-color: #ffb703 !important;
+      box-shadow: 0 0 8px rgba(255, 183, 3, 0.3) !important;
+    }
+    #customForm .form-group label {
+      color: #111111 !important; 
+      font-weight: 600;
+    }
+
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      color: #444444; 
+      font-size: 14.5px;
+      cursor: pointer;
+    }
+    .checkbox-label input[type="checkbox"] {
+      margin-right: 10px;
+      width: 18px;
+      height: 18px;
+      accent-color: #ffb703; 
+      cursor: pointer;
+    }
+    textarea.custom-textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      min-height: 100px;
+      resize: vertical;
+      font-family: inherit;
+    }
+    .req-star {
+      color: #ffb703;
+    }
+    .light-section .subtitle {
+      color: #555555; 
+    }
+  </style>
+</head>
+<body>
+
+<div id="preloader">
+  <div class="camera-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path class="draw-path" d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+      <circle class="draw-lens" cx="12" cy="13" r="4"></circle>
+      <circle class="flash-pulse" cx="18" cy="10" r="1" fill="#ffffff" stroke="none"></circle>
+    </svg>
+  </div>
+  <h2 class="loader-text">LensCraft</h2>
+</div>
+
+<header class="header">
+  <div class="container header-center">
+    <a href="index.html" style="text-decoration: none; color: inherit;">
+      <h1 class="logo">LensCraft Studio</h1>
+    </a>
+  </div>
+</header>
+
+<section class="light-section booking-page" style="padding-top: 120px; padding-bottom: 60px;">
+  <div class="container narrow reveal">
+
+    <h2 class="section-title" style="color: #111;">Request a Custom Quote</h2>
+    <p class="subtitle" style="margin-bottom: 40px;">Tell us about your unique event so we can craft the perfect package.</p>
+
+    <form id="customForm" class="booking-form">
+      
+      <h3 class="form-section-title">1. The Basics</h3>
+      
+      <div class="form-group">
+        <label>Full Name <span class="req-star">*</span></label>
+        <input type="text" id="c_name" required>
+      </div>
+
+      <div class="form-group">
+        <label>Email Address <span class="req-star">*</span></label>
+        <input type="email" id="c_email" required>
+      </div>
+
+      <div class="form-group">
+        <label>Phone Number / WhatsApp <span class="req-star">*</span></label>
+        <input type="tel" id="c_phone" pattern="[0-9]{10}" maxlength="10" required placeholder="For crucial quick follow-ups">
+      </div>
+
+      <h3 class="form-section-title">2. Core Shoot Details</h3>
+
+      <div class="form-group">
+        <label>Type of Shoot <span class="req-star">*</span></label>
+        <select id="c_shootType" required style="appearance: auto;">
+          <option value="" disabled selected>Select shoot type</option>
+          <option value="Wedding">Wedding</option>
+          <option value="Engagement">Engagement</option>
+          <option value="Pre-Wedding">Pre-Wedding</option>
+          <option value="Corporate Event">Corporate Event</option>
+          <option value="Concert/Festival">Concert / Festival</option>
+          <option value="Maternity/Baby">Maternity / Baby</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Event Date(s) <span class="req-star">*</span></label>
+        <input type="text" id="c_dates" required placeholder="e.g., 14th to 16th Dec 2026">
+      </div>
+
+      <div class="form-group">
+        <label>Venue / City Location <span class="req-star">*</span></label>
+        <input type="text" id="c_location" required placeholder="e.g., Taj Hotel, Mumbai">
+      </div>
+
+      <h3 class="form-section-title">3. The Deliverables (Optional)</h3>
+      <p style="color: #666; font-size: 13px; margin-top: -10px; margin-bottom: 15px;">Select the services you think you might need.</p>
+
+      <div class="form-group">
+        <label style="color: #ffb703; margin-bottom: 5px;">Services Needed:</label>
+        <div class="checkbox-grid">
+          <label class="checkbox-label"><input type="checkbox" class="c_service" value="Traditional Photography"> Traditional Photography</label>
+          <label class="checkbox-label"><input type="checkbox" class="c_service" value="Candid Photography"> Candid Photography</label>
+          <label class="checkbox-label"><input type="checkbox" class="c_service" value="Cinematography"> Cinematography / Video</label>
+          <label class="checkbox-label"><input type="checkbox" class="c_service" value="Drone Coverage"> Drone Coverage</label>
+        </div>
+      </div>
+
+      <h3 class="form-section-title">4. Vision & Budget (Optional)</h3>
+
+      <div class="form-group">
+        <label>Estimated Budget Range</label>
+        <select id="c_budget" style="appearance: auto;">
+          <option value="" disabled selected>Select an approximate budget</option>
+          <option value="Under 50k">Under ₹50,000</option>
+          <option value="50k to 1L">₹50,000 - ₹1,00,000</option>
+          <option value="1L to 2.5L">₹1,00,000 - ₹2,50,000</option>
+          <option value="2.5L+">₹2,50,000+</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Vision / Moodboard Link</label>
+        <input type="url" id="c_vision" placeholder="Paste Pinterest or Instagram reference link">
+      </div>
+
+      <div class="form-group">
+        <label>Additional Notes & Unique Requests</label>
+        <textarea id="c_notes" class="custom-textarea" placeholder="Describe any specific cultural ceremonies, surprise events, or unique requests..."></textarea>
+      </div>
+
+      <button type="submit" class="btn main-btn confirm-btn" style="margin-top: 30px;">
+        Request Custom Quote
+      </button>
+
+    </form>
+  </div>
+</section>
+
+<section class="booking-section light-section" style="padding-bottom: 80px; text-align: center;">
+  <div class="container narrow booking-content">
+    <h2 style="color: #111;">Book Your Package</h2>
+    <p style="color: #555; margin-bottom: 25px;">Please contact us to confirm your selected package.</p>
+
+    <div class="cta-buttons" style="display: flex; justify-content: center; gap: 15px;">
+      <a href="tel:+919978333844" class="btn main-btn">📞 Call Us</a>
+      <a href="mailto:info.skgroup4@gmail.com" class="btn main-btn">📩 Message Us</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer dark-section">
+  <div class="container">
+    © 2026 LensCraft Studio. All Rights Reserved.<br>
+    Designed with passion and professionalism.
+  </div>
+</footer>
+
+<div id="submitOverlay" class="hidden-overlay">
+  <div class="camera-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path class="draw-path" d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+      <circle class="draw-lens" cx="12" cy="13" r="4"></circle>
+      <circle class="flash-pulse" cx="18" cy="10" r="1" fill="#ffffff" stroke="none"></circle>
+    </svg>
+  </div>
+  <h2 class="loader-text">Analyzing Request...</h2>
+</div>
+
+<div id="customAlert" class="hidden-overlay">
+  <div class="alert-box">
+    <h3 id="alertTitle">Status</h3>
+    <p id="alertMessage">Message goes here.</p>
+    <button class="btn main-btn" onclick="closeAlert()" style="width: 100%;">OK</button>
+  </div>
+</div>
+
+<script>
+window.addEventListener('load', function() {
+  const preloader = document.getElementById('preloader');
+  setTimeout(() => {
+    preloader.classList.add('preloader-hidden');
+  }, 500); 
+});
+
+const API_BASE = window.location.origin.includes("localhost") ? window.location.origin : "http://localhost:3000";
+
+const submitOverlay = document.getElementById('submitOverlay');
+const customAlert = document.getElementById('customAlert');
+const alertTitle = document.getElementById('alertTitle');
+const alertMessage = document.getElementById('alertMessage');
+let redirectOnClose = false;
+
+function showCustomAlert(title, message, redirect = false) {
+  alertTitle.innerText = title;
+  alertMessage.innerText = message;
+  redirectOnClose = redirect; 
+  submitOverlay.classList.remove('show-overlay'); 
+  customAlert.classList.add('show-overlay'); 
+}
+
+function closeAlert() {
+  customAlert.classList.remove('show-overlay');
+  if (redirectOnClose) {
+    window.location.href = "index.html"; 
+  }
+}
+
+document.getElementById("customForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+
+  submitOverlay.classList.add('show-overlay');
+  
+  const selectedServices = Array.from(document.querySelectorAll('.c_service:checked')).map(cb => cb.value).join(', ');
+
+  // Updated Payload: Removed role and guestCount
+  const payload = {
+    name: document.getElementById('c_name').value.trim(),
+    email: document.getElementById('c_email').value.trim(),
+    phone: document.getElementById('c_phone').value.trim(),
+    shootType: document.getElementById('c_shootType').value,
+    dates: document.getElementById('c_dates').value.trim(),
+    location: document.getElementById('c_location').value.trim(),
+    services: selectedServices,
+    budget: document.getElementById('c_budget').value,
+    visionLink: document.getElementById('c_vision').value.trim(),
+    notes: document.getElementById('c_notes').value.trim()
+  };
+
+  const minDelay = new Promise(resolve => setTimeout(resolve, 2500)); 
+
+  const fetchRequest = fetch(`${API_BASE}/api/custom-quote`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  }).then(res => {
+    if(!res.ok) throw new Error("Server error");
+    return res.json();
+  });
+
+  try {
+    const [result] = await Promise.all([fetchRequest, minDelay]);
+
+    if(result.status === "success" || result.status === "email_error"){
+      showCustomAlert("Quote Requested!", "Your custom package details have been sent securely. Our team will review your vision and get back to you within 24 hours.", true);
+      document.getElementById("customForm").reset();
+    } else {
+      showCustomAlert("Error", "There was a missing field or server error. Please try again.");
+    }
+  } catch(error){
+    await minDelay;
+    showCustomAlert("Connection Error", "Unable to connect to the server. Make sure it is running.");
+  }
+});
+
+const revealElement = document.querySelector(".reveal");
+setTimeout(() => {
+  revealElement.classList.add("active");
+}, 200);
+</script>
+
+</body>
+</html>
