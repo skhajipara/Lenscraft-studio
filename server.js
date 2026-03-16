@@ -45,16 +45,6 @@ function formatAMPM(dateStr) {
 }
 
 /* ================= MONGODB CONNECTION & SCHEMAS ================= */
-// Helper to match SQLite output (Frontend expects 'id' instead of '_id')
-const toJSONConfig = {
-  virtuals: true,
-  transform: (doc, ret) => {
-    ret.id = ret._id;
-    delete ret._id;
-    delete ret.__v;
-    return ret;
-  }
-};
 
 const bookingSchema = new mongoose.Schema({
   booking_id: String,
@@ -73,25 +63,34 @@ const bookingSchema = new mongoose.Schema({
   payment_method: { type: String, default: '' },
   calendar_event_id: String,
   created_at: { type: Date, default: Date.now }
-}, { toJSON: toJSONConfig });
+});
 
 const customQuoteSchema = new mongoose.Schema({
   name: String, email: String, phone: String, shoot_type: String, event_dates: String,
   location: String, services: String, budget: String, vision_link: String, notes: String,
   created_at: { type: Date, default: Date.now }
-}, { toJSON: toJSONConfig });
+});
 
 const gallerySchema = new mongoose.Schema({
   category: String, type: String, url: String, created_at: { type: Date, default: Date.now }
-}, { toJSON: toJSONConfig });
+});
 
 const packageSchema = new mongoose.Schema({
   category: String, title: String, price: Number, features: String, is_premium: { type: Number, default: 0 }
-}, { toJSON: toJSONConfig });
+});
 
 const staffGroupSchema = new mongoose.Schema({
   group_name: { type: String, unique: true }, email: String
-}, { toJSON: toJSONConfig });
+});
+
+// Helper to format Mongoose documents for the frontend
+const formatDoc = (doc) => {
+  const obj = doc.toObject();
+  obj.id = obj._id.toString();
+  delete obj._id;
+  delete obj.__v;
+  return obj;
+};
 
 const Booking = mongoose.model('Booking', bookingSchema);
 const CustomQuote = mongoose.model('CustomQuote', customQuoteSchema);
@@ -145,11 +144,14 @@ mongoose.connect(process.env.MONGO_URI)
         { category: 'religious', title: 'Premium Festival', price: 40000, features: 'DSLR Photography\n4K Video Coverage\nDrone Shots\nSelected Photos Edited', is_premium: 1 }
       ];
       await Package.insertMany(defaultPkgs);
+    } else {
+      console.log(`✅ Packages ready. Found ${packageCount} records.`);
     }
 
     // Auto-Seeder: Staff Groups
     const staffCount = await StaffGroup.countDocuments();
     if (staffCount === 0) {
+      console.log("Seeding default staff groups...");
       const defaultGroups = [
         { group_name: 'Group 1', email: 'hajiparasarvesh@gmail.com' },
         { group_name: 'Group 2', email: 'sarveshhajipara@gmail.com' },
@@ -157,6 +159,8 @@ mongoose.connect(process.env.MONGO_URI)
         { group_name: 'Group 4', email: 'ishagojariya@gmail.com' }
       ];
       await StaffGroup.insertMany(defaultGroups);
+    } else {
+      console.log(`✅ Staff groups ready. Found ${staffCount} records.`);
     }
   })
   .catch(err => console.log("Database connection error:", err));
@@ -466,14 +470,16 @@ function paymentUpdateTemplate(data) {
 app.get("/api/gallery", async (req, res) => {
   try {
     const rows = await Gallery.find().sort({ created_at: -1 });
-    res.json({ status: "success", data: rows });
+    const formattedRows = rows.map(formatDoc);
+    res.json({ status: "success", data: formattedRows });
   } catch (err) { res.json({ status: "error", data: [] }); }
 });
 
 app.get("/api/packages", async (req, res) => {
   try {
     const rows = await Package.find().sort({ category: 1, price: 1 });
-    res.json({ status: "success", data: rows });
+    const formattedRows = rows.map(formatDoc);
+    res.json({ status: "success", data: formattedRows });
   } catch (err) { res.json({ status: "error", data: [] }); }
 });
 
@@ -571,7 +577,8 @@ app.get("/api/stats", async (req, res) => {
 app.get("/api/admin/bookings", async (req, res) => {
   try {
     const rows = await Booking.find().sort({ created_at: -1 });
-    res.json({ status: "success", data: rows });
+    const formattedRows = rows.map(formatDoc);
+    res.json({ status: "success", data: formattedRows });
   } catch(err) { res.json({ status: "error", data: [] }); }
 });
 
@@ -672,7 +679,8 @@ app.delete("/api/admin/bookings/:id", async (req, res) => {
 app.get("/api/admin/quotes", async (req, res) => {
   try {
     const rows = await CustomQuote.find().sort({ created_at: -1 });
-    res.json({ status: "success", data: rows });
+    const formattedRows = rows.map(formatDoc);
+    res.json({ status: "success", data: formattedRows });
   } catch(err) { res.json({ status: "error", data: [] }); }
 });
 
@@ -694,7 +702,8 @@ app.delete("/api/admin/quotes/:id", async (req, res) => {
 app.get("/api/admin/staff", async (req, res) => {
   try {
     const rows = await StaffGroup.find();
-    res.json({ status: "success", data: rows });
+    const formattedRows = rows.map(formatDoc);
+    res.json({ status: "success", data: formattedRows });
   } catch(err) { res.json({ status: "error", data: [] }); }
 });
 
