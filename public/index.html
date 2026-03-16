@@ -233,11 +233,8 @@
   // 2. Fetch Live Database Stats & Calculate All Dynamics
   async function loadLiveStats() {
     try {
-      const API_BASE = window.location.origin.includes("localhost") 
-        ? window.location.origin 
-        : "http://localhost:3000";
-
-      const response = await fetch(`${API_BASE}/api/stats`);
+      // 👇 THE FIX: Using a relative path for Render and Localhost
+      const response = await fetch(`/api/stats`);
       
       if (!response.ok) throw new Error("Server not responding");
       

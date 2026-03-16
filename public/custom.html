@@ -229,88 +229,86 @@
 </div>
 
 <script>
-window.addEventListener('load', function() {
-  const preloader = document.getElementById('preloader');
-  setTimeout(() => {
-    preloader.classList.add('preloader-hidden');
-  }, 500); 
-});
-
-const API_BASE = window.location.origin.includes("localhost") ? window.location.origin : "http://localhost:3000";
-
-const submitOverlay = document.getElementById('submitOverlay');
-const customAlert = document.getElementById('customAlert');
-const alertTitle = document.getElementById('alertTitle');
-const alertMessage = document.getElementById('alertMessage');
-let redirectOnClose = false;
-
-function showCustomAlert(title, message, redirect = false) {
-  alertTitle.innerText = title;
-  alertMessage.innerText = message;
-  redirectOnClose = redirect; 
-  submitOverlay.classList.remove('show-overlay'); 
-  customAlert.classList.add('show-overlay'); 
-}
-
-function closeAlert() {
-  customAlert.classList.remove('show-overlay');
-  if (redirectOnClose) {
-    window.location.href = "index.html"; 
-  }
-}
-
-document.getElementById("customForm").addEventListener("submit", async function(e){
-  e.preventDefault();
-
-  submitOverlay.classList.add('show-overlay');
-  
-  const selectedServices = Array.from(document.querySelectorAll('.c_service:checked')).map(cb => cb.value).join(', ');
-
-  // Updated Payload: Removed role and guestCount
-  const payload = {
-    name: document.getElementById('c_name').value.trim(),
-    email: document.getElementById('c_email').value.trim(),
-    phone: document.getElementById('c_phone').value.trim(),
-    shootType: document.getElementById('c_shootType').value,
-    dates: document.getElementById('c_dates').value.trim(),
-    location: document.getElementById('c_location').value.trim(),
-    services: selectedServices,
-    budget: document.getElementById('c_budget').value,
-    visionLink: document.getElementById('c_vision').value.trim(),
-    notes: document.getElementById('c_notes').value.trim()
-  };
-
-  const minDelay = new Promise(resolve => setTimeout(resolve, 2500)); 
-
-  const fetchRequest = fetch(`${API_BASE}/api/custom-quote`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  }).then(res => {
-    if(!res.ok) throw new Error("Server error");
-    return res.json();
+  window.addEventListener('load', function() {
+    const preloader = document.getElementById('preloader');
+    setTimeout(() => {
+      preloader.classList.add('preloader-hidden');
+    }, 500); 
   });
-
-  try {
-    const [result] = await Promise.all([fetchRequest, minDelay]);
-
-    if(result.status === "success" || result.status === "email_error"){
-      showCustomAlert("Quote Requested!", "Your custom package details have been sent securely. Our team will review your vision and get back to you within 24 hours.", true);
-      document.getElementById("customForm").reset();
-    } else {
-      showCustomAlert("Error", "There was a missing field or server error. Please try again.");
-    }
-  } catch(error){
-    await minDelay;
-    showCustomAlert("Connection Error", "Unable to connect to the server. Make sure it is running.");
+  
+  const submitOverlay = document.getElementById('submitOverlay');
+  const customAlert = document.getElementById('customAlert');
+  const alertTitle = document.getElementById('alertTitle');
+  const alertMessage = document.getElementById('alertMessage');
+  let redirectOnClose = false;
+  
+  function showCustomAlert(title, message, redirect = false) {
+    alertTitle.innerText = title;
+    alertMessage.innerText = message;
+    redirectOnClose = redirect; 
+    submitOverlay.classList.remove('show-overlay'); 
+    customAlert.classList.add('show-overlay'); 
   }
-});
-
-const revealElement = document.querySelector(".reveal");
-setTimeout(() => {
-  revealElement.classList.add("active");
-}, 200);
-</script>
+  
+  function closeAlert() {
+    customAlert.classList.remove('show-overlay');
+    if (redirectOnClose) {
+      window.location.href = "index.html"; 
+    }
+  }
+  
+  document.getElementById("customForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+  
+    submitOverlay.classList.add('show-overlay');
+    
+    const selectedServices = Array.from(document.querySelectorAll('.c_service:checked')).map(cb => cb.value).join(', ');
+  
+    const payload = {
+      name: document.getElementById('c_name').value.trim(),
+      email: document.getElementById('c_email').value.trim(),
+      phone: document.getElementById('c_phone').value.trim(),
+      shootType: document.getElementById('c_shootType').value,
+      dates: document.getElementById('c_dates').value.trim(),
+      location: document.getElementById('c_location').value.trim(),
+      services: selectedServices,
+      budget: document.getElementById('c_budget').value,
+      visionLink: document.getElementById('c_vision').value.trim(),
+      notes: document.getElementById('c_notes').value.trim()
+    };
+  
+    const minDelay = new Promise(resolve => setTimeout(resolve, 2500)); 
+  
+    // 👇 THE FIX: Using a relative path so it routes correctly on Render
+    const fetchRequest = fetch(`/api/custom-quote`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(res => {
+      if(!res.ok) throw new Error("Server error");
+      return res.json();
+    });
+  
+    try {
+      const [result] = await Promise.all([fetchRequest, minDelay]);
+  
+      if(result.status === "success" || result.status === "email_error"){
+        showCustomAlert("Quote Requested!", "Your custom package details have been sent securely. Our team will review your vision and get back to you within 24 hours.", true);
+        document.getElementById("customForm").reset();
+      } else {
+        showCustomAlert("Error", "There was a missing field or server error. Please try again.");
+      }
+    } catch(error){
+      await minDelay;
+      showCustomAlert("Connection Error", "Unable to connect to the server. Make sure it is running.");
+    }
+  });
+  
+  const revealElement = document.querySelector(".reveal");
+  setTimeout(() => {
+    revealElement.classList.add("active");
+  }, 200);
+  </script>
 
 </body>
 </html>

@@ -165,11 +165,10 @@
   reveals.forEach(el => observer.observe(el));
 
   // 2. Fetch and Render Packages Dynamically!
-  const API_BASE = window.location.origin.includes("localhost") ? window.location.origin : "http://localhost:3000";
-
   async function loadPackages() {
     try {
-      const res = await fetch(`${API_BASE}/api/packages`);
+      // 👇 THE FIX: Use a relative path so it works perfectly on local AND Render
+      const res = await fetch(`/api/packages`);
       const json = await res.json();
       const pkgs = json.data || [];
 
@@ -212,7 +211,7 @@
         }
       });
 
-      // 👇 THE FIX: Re-calculate scroll position AFTER content is loaded 👇
+      // Re-calculate scroll position AFTER content is loaded
       if (window.location.hash) {
         setTimeout(() => {
           const targetSection = document.querySelector(window.location.hash);

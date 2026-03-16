@@ -178,118 +178,99 @@
 </div>
 
 <script>
-/* ================= PAGE PRELOADER ================= */
-window.addEventListener('load', function() {
-  const preloader = document.getElementById('preloader');
-  setTimeout(() => {
-    preloader.classList.add('preloader-hidden');
-  }, 500); 
-});
-
-/* ================= SAFE API BASE ================= */
-const API_BASE = window.location.origin.includes("localhost") ? window.location.origin : "http://localhost:3000";
-
-/* ================= BOOKING ID GENERATOR ================= */
-function generateBookingID() {
-  const d = new Date();
-  const yy = String(d.getFullYear()).slice(-2); 
-  const mm = String(d.getMonth() + 1).padStart(2, '0'); 
-  const dd = String(d.getDate()).padStart(2, '0'); 
-  const random4 = Math.floor(1000 + Math.random() * 9000); 
-  return `LCS${yy}${mm}${dd}${random4}`;
-}
-document.getElementById("bookingId").value = generateBookingID();
-
-/* ================= DATE LIMIT ================= */
-const now = new Date();
-const isoNow = now.toISOString().slice(0,16);
-document.getElementById("fromDate").min = isoNow;
-document.getElementById("toDate").min = isoNow;
-
-/* ================= DYNAMIC PACKAGE FETCHING ================= */
-async function loadPackagesIntoDropdown() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const selectedPkgId = urlParams.get('pkgId'); // E.g., booking.html?pkgId=2
+  /* ================= PAGE PRELOADER ================= */
+  window.addEventListener('load', function() {
+    const preloader = document.getElementById('preloader');
+    setTimeout(() => {
+      preloader.classList.add('preloader-hidden');
+    }, 500); 
+  });
   
-  const selectEl = document.getElementById("packageSelect");
-  const amountEl = document.getElementById("amountField");
-
-  try {
-    const res = await fetch(`${API_BASE}/api/packages`);
-    const json = await res.json();
-    const pkgs = json.data || [];
-
-    selectEl.innerHTML = '<option value="" disabled selected>Please select a package</option>';
-
-    pkgs.forEach(p => {
-      const option = document.createElement("option");
-      // Value saved to DB will be something like "Wedding - Premium Wedding"
-      option.value = `${p.category.toUpperCase()} - ${p.title}`;
-      option.dataset.price = p.price; // Store price hidden in the HTML element
-      option.textContent = `${p.title} (₹${p.price.toLocaleString('en-IN')})`;
-
-      // If they clicked a specific package on the previous page, auto-select it!
-      if (selectedPkgId && p.id == selectedPkgId) {
-        option.selected = true;
-        amountEl.value = "₹" + p.price.toLocaleString('en-IN');
-      }
-
-      selectEl.appendChild(option);
-    });
-
-    // When the user changes the dropdown manually, update the price box
-    selectEl.addEventListener('change', function() {
-      const selectedOption = this.options[this.selectedIndex];
-      if (selectedOption.dataset.price) {
-        amountEl.value = "₹" + Number(selectedOption.dataset.price).toLocaleString('en-IN');
-      }
-    });
-
-  } catch (error) {
-    console.error("Failed to fetch packages", error);
-    selectEl.innerHTML = '<option value="" disabled selected>Error loading packages</option>';
+  /* ================= BOOKING ID GENERATOR ================= */
+  function generateBookingID() {
+    const d = new Date();
+    const yy = String(d.getFullYear()).slice(-2); 
+    const mm = String(d.getMonth() + 1).padStart(2, '0'); 
+    const dd = String(d.getDate()).padStart(2, '0'); 
+    const random4 = Math.floor(1000 + Math.random() * 9000); 
+    return `LCS${yy}${mm}${dd}${random4}`;
   }
-}
-loadPackagesIntoDropdown();
-
-
-/* ================= PINCODE DROPDOWN FETCH ================= */
-document.getElementById("pincode").addEventListener("input", async function() {
-  const pin = this.value;
-  const msg = document.getElementById("pincodeMsg");
-  const cityStateDropdown = document.getElementById("cityState");
+  document.getElementById("bookingId").value = generateBookingID();
   
-  if(pin.length === 6) {
-    msg.innerText = "Searching online for locations...";
-    cityStateDropdown.innerHTML = '<option value="">Loading areas...</option>';
-    let placeFound = false;
+  /* ================= DATE LIMIT ================= */
+  const now = new Date();
+  const isoNow = now.toISOString().slice(0,16);
+  document.getElementById("fromDate").min = isoNow;
+  document.getElementById("toDate").min = isoNow;
+  
+  /* ================= DYNAMIC PACKAGE FETCHING ================= */
+  async function loadPackagesIntoDropdown() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedPkgId = urlParams.get('pkgId'); // E.g., booking.html?pkgId=2
     
+    const selectEl = document.getElementById("packageSelect");
+    const amountEl = document.getElementById("amountField");
+  
     try {
-      const response1 = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
-      const data1 = await response1.json();
+      // 👇 THE FIX: Using relative path
+      const res = await fetch(`/api/packages`);
+      const json = await res.json();
+      const pkgs = json.data || [];
+  
+      selectEl.innerHTML = '<option value="" disabled selected>Please select a package</option>';
+  
+      pkgs.forEach(p => {
+        const option = document.createElement("option");
+        // Value saved to DB will be something like "Wedding - Premium Wedding"
+        option.value = `${p.category.toUpperCase()} - ${p.title}`;
+        option.dataset.price = p.price; // Store price hidden in the HTML element
+        option.textContent = `${p.title} (₹${p.price.toLocaleString('en-IN')})`;
+  
+        // If they clicked a specific package on the previous page, auto-select it!
+        if (selectedPkgId && p.id == selectedPkgId) {
+          option.selected = true;
+          amountEl.value = "₹" + p.price.toLocaleString('en-IN');
+        }
+  
+        selectEl.appendChild(option);
+      });
+  
+      // When the user changes the dropdown manually, update the price box
+      selectEl.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.dataset.price) {
+          amountEl.value = "₹" + Number(selectedOption.dataset.price).toLocaleString('en-IN');
+        }
+      });
+  
+    } catch (error) {
+      console.error("Failed to fetch packages", error);
+      selectEl.innerHTML = '<option value="" disabled selected>Error loading packages</option>';
+    }
+  }
+  loadPackagesIntoDropdown();
+  
+  
+  /* ================= PINCODE DROPDOWN FETCH ================= */
+  document.getElementById("pincode").addEventListener("input", async function() {
+    const pin = this.value;
+    const msg = document.getElementById("pincodeMsg");
+    const cityStateDropdown = document.getElementById("cityState");
+    
+    if(pin.length === 6) {
+      msg.innerText = "Searching online for locations...";
+      cityStateDropdown.innerHTML = '<option value="">Loading areas...</option>';
+      let placeFound = false;
       
-      if(data1 && data1[0] && data1[0].Status === "Success") {
-        cityStateDropdown.innerHTML = '<option value="" disabled selected>Select your specific area</option>';
-        data1[0].PostOffice.forEach(place => {
-          const option = document.createElement("option");
-          const fullPlaceText = `${place.Name}, ${place.District}, ${place.State}`;
-          option.value = fullPlaceText;
-          option.textContent = fullPlaceText;
-          cityStateDropdown.appendChild(option);
-        });
-        placeFound = true;
-      }
-    } catch(e) {}
-
-    if (!placeFound) {
       try {
-        const response2 = await fetch(`https://api.zippopotam.us/IN/${pin}`);
-        if (response2.ok) {
-          const data2 = await response2.json();
+        const response1 = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+        const data1 = await response1.json();
+        
+        if(data1 && data1[0] && data1[0].Status === "Success") {
           cityStateDropdown.innerHTML = '<option value="" disabled selected>Select your specific area</option>';
-          data2.places.forEach(place => {
+          data1[0].PostOffice.forEach(place => {
             const option = document.createElement("option");
-            const fullPlaceText = `${place["place name"]}, ${place.state}`;
+            const fullPlaceText = `${place.Name}, ${place.District}, ${place.State}`;
             option.value = fullPlaceText;
             option.textContent = fullPlaceText;
             cityStateDropdown.appendChild(option);
@@ -297,135 +278,153 @@ document.getElementById("pincode").addEventListener("input", async function() {
           placeFound = true;
         }
       } catch(e) {}
-    }
-
-    if (placeFound) {
-      msg.innerText = "✅ Locations found! Please select from the dropdown.";
-      cityStateDropdown.disabled = false;
-      setTimeout(() => msg.innerText = "", 4000); 
+  
+      if (!placeFound) {
+        try {
+          const response2 = await fetch(`https://api.zippopotam.us/IN/${pin}`);
+          if (response2.ok) {
+            const data2 = await response2.json();
+            cityStateDropdown.innerHTML = '<option value="" disabled selected>Select your specific area</option>';
+            data2.places.forEach(place => {
+              const option = document.createElement("option");
+              const fullPlaceText = `${place["place name"]}, ${place.state}`;
+              option.value = fullPlaceText;
+              option.textContent = fullPlaceText;
+              cityStateDropdown.appendChild(option);
+            });
+            placeFound = true;
+          }
+        } catch(e) {}
+      }
+  
+      if (placeFound) {
+        msg.innerText = "✅ Locations found! Please select from the dropdown.";
+        cityStateDropdown.disabled = false;
+        setTimeout(() => msg.innerText = "", 4000); 
+      } else {
+        msg.innerText = "❌ Invalid Pincode or servers down.";
+        resetDropdown();
+      }
     } else {
-      msg.innerText = "❌ Invalid Pincode or servers down.";
+      msg.innerText = "";
       resetDropdown();
     }
-  } else {
-    msg.innerText = "";
-    resetDropdown();
-  }
-
-  function resetDropdown() {
-    cityStateDropdown.innerHTML = '<option value="">Auto-fills after entering Pincode</option>';
-    cityStateDropdown.disabled = true;
-  }
-});
-
-/* ================= CUSTOM ALERT FUNCTIONS ================= */
-const submitOverlay = document.getElementById('submitOverlay');
-const customAlert = document.getElementById('customAlert');
-const alertTitle = document.getElementById('alertTitle');
-const alertMessage = document.getElementById('alertMessage');
-let redirectOnClose = false;
-
-function showCustomAlert(title, message, redirect = false) {
-  alertTitle.innerText = title;
-  alertMessage.innerText = message;
-  redirectOnClose = redirect; 
-  submitOverlay.classList.remove('show-overlay'); 
-  customAlert.classList.add('show-overlay'); 
-}
-
-function closeAlert() {
-  customAlert.classList.remove('show-overlay');
-  if (redirectOnClose) {
-    window.location.href = "index.html";
-  }
-}
-
-/* ================= FORM SUBMIT ================= */
-document.getElementById("bookingForm").addEventListener("submit", async function(e){
-  e.preventDefault();
-
-  const bookingId = document.getElementById("bookingId").value;
-  const pincode = document.getElementById("pincode").value.trim();
-  const name = document.getElementById("fullName").value.trim();
-  const phone = document.getElementById("phoneNumber").value.trim();
-  const email = document.getElementById("emailAddress").value.trim();
-  const fromValue = document.getElementById("fromDate").value;
-  const toValue = document.getElementById("toDate").value;
-  const venue = document.getElementById("eventLocation").value.trim();
-  const cityState = document.getElementById("cityState").value.trim();
-  const fullLocation = `${venue}, ${cityState} - ${pincode}`;
-
-  const packageNameValue = document.getElementById("packageSelect").value;
-  const amountValue = document.getElementById("amountField").value;
-
-  const from = new Date(fromValue);
-  const to = new Date(toValue);
-  const nowTime = new Date();
-
-  if(!name || !phone || !email || !fromValue || !toValue || !venue || !cityState || !packageNameValue){
-    showCustomAlert("Missing Fields", "All fields must be filled before submitting.");
-    return;
-  }
-  if(from < nowTime || to < nowTime){
-    showCustomAlert("Invalid Date", "We can't book a past date & time slot.");
-    return;
-  }
-  if(from.getTime() === to.getTime()){
-    showCustomAlert("Invalid Time", "From & To time can't be exactly the same.");
-    return;
-  }
-  if(to < from){
-    showCustomAlert("Invalid Time", "End time must be after the start time.");
-    return;
-  }
-
-  submitOverlay.classList.add('show-overlay');
-  const minDelay = new Promise(resolve => setTimeout(resolve, 2000));
-
-  const fetchRequest = fetch(`${API_BASE}/api/book`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      bookingId, pincode, name, phone, email,
-      packageName: packageNameValue,
-      amount: amountValue,
-      from: fromValue, to: toValue,
-      location: fullLocation
-    })
-  }).then(res => {
-    if(!res.ok) throw new Error("Server error");
-    return res.json();
+  
+    function resetDropdown() {
+      cityStateDropdown.innerHTML = '<option value="">Auto-fills after entering Pincode</option>';
+      cityStateDropdown.disabled = true;
+    }
   });
-
-  try {
-    const [result] = await Promise.all([fetchRequest, minDelay]);
-
-    if(result.status === "booked"){
-      showCustomAlert("No Teams Available", "We apologize, but all our photography teams are already booked for this specific time slot. Please select a different time or date.");
-    }
-    else if(result.status === "success"){
-      showCustomAlert("Booking Confirmed!", "Your request has been saved securely. Check your email for full confirmation details.", true);
-      document.getElementById("bookingId").value = generateBookingID();
-      document.getElementById("bookingForm").reset();
-    }
-    else if(result.status === "email_error"){
-      showCustomAlert("Booking Saved", "Your booking was saved, but we couldn't send the confirmation email. Our team will contact you shortly.", true);
-    }
-    else{
-      showCustomAlert("Error", "A server error occurred. Please try again.");
-    }
-
-  } catch(error){
-    await minDelay;
-    showCustomAlert("Connection Error", "Unable to connect to the server. Make sure your server is running.");
+  
+  /* ================= CUSTOM ALERT FUNCTIONS ================= */
+  const submitOverlay = document.getElementById('submitOverlay');
+  const customAlert = document.getElementById('customAlert');
+  const alertTitle = document.getElementById('alertTitle');
+  const alertMessage = document.getElementById('alertMessage');
+  let redirectOnClose = false;
+  
+  function showCustomAlert(title, message, redirect = false) {
+    alertTitle.innerText = title;
+    alertMessage.innerText = message;
+    redirectOnClose = redirect; 
+    submitOverlay.classList.remove('show-overlay'); 
+    customAlert.classList.add('show-overlay'); 
   }
-});
-
-/* ================= REVEAL ANIMATION ================= */
-const revealElement = document.querySelector(".reveal");
-setTimeout(() => {
-  revealElement.classList.add("active");
-}, 200);
-</script>
+  
+  function closeAlert() {
+    customAlert.classList.remove('show-overlay');
+    if (redirectOnClose) {
+      window.location.href = "index.html";
+    }
+  }
+  
+  /* ================= FORM SUBMIT ================= */
+  document.getElementById("bookingForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+  
+    const bookingId = document.getElementById("bookingId").value;
+    const pincode = document.getElementById("pincode").value.trim();
+    const name = document.getElementById("fullName").value.trim();
+    const phone = document.getElementById("phoneNumber").value.trim();
+    const email = document.getElementById("emailAddress").value.trim();
+    const fromValue = document.getElementById("fromDate").value;
+    const toValue = document.getElementById("toDate").value;
+    const venue = document.getElementById("eventLocation").value.trim();
+    const cityState = document.getElementById("cityState").value.trim();
+    const fullLocation = `${venue}, ${cityState} - ${pincode}`;
+  
+    const packageNameValue = document.getElementById("packageSelect").value;
+    const amountValue = document.getElementById("amountField").value;
+  
+    const from = new Date(fromValue);
+    const to = new Date(toValue);
+    const nowTime = new Date();
+  
+    if(!name || !phone || !email || !fromValue || !toValue || !venue || !cityState || !packageNameValue){
+      showCustomAlert("Missing Fields", "All fields must be filled before submitting.");
+      return;
+    }
+    if(from < nowTime || to < nowTime){
+      showCustomAlert("Invalid Date", "We can't book a past date & time slot.");
+      return;
+    }
+    if(from.getTime() === to.getTime()){
+      showCustomAlert("Invalid Time", "From & To time can't be exactly the same.");
+      return;
+    }
+    if(to < from){
+      showCustomAlert("Invalid Time", "End time must be after the start time.");
+      return;
+    }
+  
+    submitOverlay.classList.add('show-overlay');
+    const minDelay = new Promise(resolve => setTimeout(resolve, 2000));
+  
+    // 👇 THE FIX: Using relative path
+    const fetchRequest = fetch(`/api/book`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        bookingId, pincode, name, phone, email,
+        packageName: packageNameValue,
+        amount: amountValue,
+        from: fromValue, to: toValue,
+        location: fullLocation
+      })
+    }).then(res => {
+      if(!res.ok) throw new Error("Server error");
+      return res.json();
+    });
+  
+    try {
+      const [result] = await Promise.all([fetchRequest, minDelay]);
+  
+      if(result.status === "booked"){
+        showCustomAlert("No Teams Available", "We apologize, but all our photography teams are already booked for this specific time slot. Please select a different time or date.");
+      }
+      else if(result.status === "success"){
+        showCustomAlert("Booking Confirmed!", "Your request has been saved securely. Check your email for full confirmation details.", true);
+        document.getElementById("bookingId").value = generateBookingID();
+        document.getElementById("bookingForm").reset();
+      }
+      else if(result.status === "email_error"){
+        showCustomAlert("Booking Saved", "Your booking was saved, but we couldn't send the confirmation email. Our team will contact you shortly.", true);
+      }
+      else{
+        showCustomAlert("Error", "A server error occurred. Please try again.");
+      }
+  
+    } catch(error){
+      await minDelay;
+      showCustomAlert("Connection Error", "Unable to connect to the server. Make sure your server is running.");
+    }
+  });
+  
+  /* ================= REVEAL ANIMATION ================= */
+  const revealElement = document.querySelector(".reveal");
+  setTimeout(() => {
+    revealElement.classList.add("active");
+  }, 200);
+  </script>
 </body>
 </html>

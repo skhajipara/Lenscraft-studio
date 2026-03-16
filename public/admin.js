@@ -2,8 +2,6 @@
    LENSCRAFT PRO ADMIN DASHBOARD SCRIPT (B&W THEME)
 ========================================================= */
 
-const API_BASE = window.location.origin.includes("localhost") ? window.location.origin : "http://localhost:3000";
-
 window.addEventListener('load', () => {
   setTimeout(() => {
     document.getElementById('preloader').classList.add('preloader-hidden');
@@ -88,7 +86,7 @@ function formatToIST(dbTimestamp) {
 /* ================= STAFF MANAGEMENT ================= */
 let staffData = [];
 async function fetchStaff() {
-  const res = await fetch(`${API_BASE}/api/admin/staff`);
+  const res = await fetch(`/api/admin/staff`);
   const json = await res.json();
   staffData = json.data || [];
   
@@ -98,7 +96,7 @@ async function fetchStaff() {
   } else {
     staffData.forEach(s => {
       tbody.innerHTML += `<tr><td style="color:#555;">${s.id}</td><td style="color:#fff; font-weight:500;">${s.group_name}</td><td style="color:#aaa;">${s.email}</td>
-        <td><div class="action-icons"><button class="icon-btn" onclick="openStaffModal(${s.id})">✏️ <span class="btn-text">Edit</span></button><button class="icon-btn delete" onclick="deleteStaff(${s.id})">🗑️ <span class="btn-text">Delete</span></button></div></td></tr>`;
+        <td><div class="action-icons"><button class="icon-btn" onclick="openStaffModal('${s.id}')">✏️ <span class="btn-text">Edit</span></button><button class="icon-btn delete" onclick="deleteStaff('${s.id}')">🗑️ <span class="btn-text">Delete</span></button></div></td></tr>`;
     });
   }
 
@@ -112,26 +110,26 @@ async function fetchStaff() {
 function openStaffModal(id = null) {
   document.getElementById('staffModal').style.display = 'flex';
   if(id) {
-    const s = staffData.find(x => x.id === id);
+    const s = staffData.find(x => x.id == id);
     document.getElementById('s_id').value = s.id; document.getElementById('s_groupName').value = s.group_name; document.getElementById('s_email').value = s.email;
   } else { document.getElementById('s_id').value = ""; document.getElementById('s_groupName').value = ""; document.getElementById('s_email').value = ""; }
 }
 async function saveStaff() {
   const id = document.getElementById('s_id').value;
-  await fetch(id ? `${API_BASE}/api/admin/staff/${id}` : `${API_BASE}/api/admin/staff`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ group_name: document.getElementById('s_groupName').value, email: document.getElementById('s_email').value }) });
+  await fetch(id ? `/api/admin/staff/${id}` : `/api/admin/staff`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ group_name: document.getElementById('s_groupName').value, email: document.getElementById('s_email').value }) });
   closeModal('staffModal'); fetchStaff();
 }
-async function deleteStaff(id) { if(confirm("Delete this team?")) { await fetch(`${API_BASE}/api/admin/staff/${id}`, { method: 'DELETE' }); fetchStaff(); } }
+async function deleteStaff(id) { if(confirm("Delete this team?")) { await fetch(`/api/admin/staff/${id}`, { method: 'DELETE' }); fetchStaff(); } }
 
 /* ================= BOOKINGS MANAGEMENT & FILTERS ================= */
 let bookingsData = [];
 
 async function fetchBookings() {
   try {
-    const res = await fetch(`${API_BASE}/api/admin/bookings`);
+    const res = await fetch(`/api/admin/bookings`);
     const json = await res.json();
     bookingsData = json.data || [];
-    bookingsData.sort((a, b) => a.id - b.id);
+    bookingsData.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     renderBookingsTable(bookingsData);
   } catch (e) { console.log(e); }
 }
@@ -165,10 +163,10 @@ function renderBookingsTable(dataToRender) {
         </td>
         <td><span class="status-pill ${payClass}">${dbStatus}</span></td>
         <td>${b.payment_method || '-'}</td><td><b style="color:#fff;">${b.assigned_group || '-'}</b></td>
-        <td>${b.from_date.replace('T', ' ')}</td><td>${b.to_date.replace('T', ' ')}</td>
+        <td>${b.from_date ? b.from_date.replace('T', ' ') : '-'}</td><td>${b.to_date ? b.to_date.replace('T', ' ') : '-'}</td>
         <td>${b.pincode || '-'}</td><td>${b.location}</td><td style="color:#666; font-size:12px;">${istDate}</td>
         <td style="position: sticky; right: 0; background: #111; border-left: 1px solid #222;">
-          <div class="action-icons"><button class="icon-btn" onclick="openBookingModal(${b.id})">✏️ <span class="btn-text">Edit</span></button><button class="icon-btn delete" onclick="deleteBooking(${b.id})">🗑️ <span class="btn-text">Delete</span></button></div>
+          <div class="action-icons"><button class="icon-btn" onclick="openBookingModal('${b.id}')">✏️ <span class="btn-text">Edit</span></button><button class="icon-btn delete" onclick="deleteBooking('${b.id}')">🗑️ <span class="btn-text">Delete</span></button></div>
         </td>
       </tr>`;
   });
@@ -197,7 +195,7 @@ function applyBookingFilters() {
     return true; 
   });
 
-  filtered.sort((a, b) => sortOrder === 'asc' ? a.id - b.id : b.id - a.id);
+  filtered.sort((a, b) => sortOrder === 'asc' ? new Date(a.created_at) - new Date(b.created_at) : new Date(b.created_at) - new Date(a.created_at));
   renderBookingsTable(filtered);
 }
 
@@ -209,14 +207,14 @@ function clearBookingFilters() {
   document.getElementById('f_year').value = '';
   document.getElementById('f_dateSubmitted').value = '';
   document.getElementById('f_payStatus').value = '';
-  bookingsData.sort((a, b) => a.id - b.id);
+  bookingsData.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
   renderBookingsTable(bookingsData); 
 }
 
 function openBookingModal(id = null) {
   document.getElementById('bookingModal').style.display = 'flex';
   if (id) {
-    const b = bookingsData.find(x => x.id === id);
+    const b = bookingsData.find(x => x.id == id);
     document.getElementById('b_id').value = b.id; 
     document.getElementById('b_bookingId').value = b.booking_id;
     document.getElementById('b_name').value = b.name; 
@@ -280,20 +278,20 @@ async function saveBooking() {
     payment_method: document.getElementById('b_payMethod').value
   };
   const id = document.getElementById('b_id').value;
-  await fetch(id ? `${API_BASE}/api/admin/bookings/${id}` : `${API_BASE}/api/admin/bookings`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  await fetch(id ? `/api/admin/bookings/${id}` : `/api/admin/bookings`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   closeModal('bookingModal'); fetchBookings(); 
 }
 
-async function deleteBooking(id) { if(confirm("Delete this booking?")) { await fetch(`${API_BASE}/api/admin/bookings/${id}`, { method: 'DELETE' }); fetchBookings(); } }
+async function deleteBooking(id) { if(confirm("Delete this booking?")) { await fetch(`/api/admin/bookings/${id}`, { method: 'DELETE' }); fetchBookings(); } }
 
 /* ================= QUOTES ================= */
 let quotesData = [];
 async function fetchQuotes() {
   try {
-    const res = await fetch(`${API_BASE}/api/admin/quotes`);
+    const res = await fetch(`/api/admin/quotes`);
     const json = await res.json();
     quotesData = json.data || [];
-    quotesData.sort((a, b) => a.id - b.id); 
+    quotesData.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)); 
     const tbody = document.getElementById('quotesTableBody');
     tbody.innerHTML = '';
     if(quotesData.length === 0) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center; padding: 40px; color:#555;">No inquiries found.</td></tr>'; return; }
@@ -306,7 +304,7 @@ async function fetchQuotes() {
           <td>${q.vision_link ? `<a href="${q.vision_link}" target="_blank" style="color:#ccc; text-decoration:underline;">View Link</a>` : '-'}</td><td>${q.notes ? q.notes.substring(0, 30) + '...' : '-'}</td>
           <td style="color:#666; font-size:12px;">${formatToIST(q.created_at)}</td>
           <td style="position: sticky; right: 0; background: #111; border-left: 1px solid #222;">
-            <div class="action-icons"><button class="icon-btn" onclick="openQuoteModal(${q.id})">✏️ <span class="btn-text">Edit</span></button><button class="icon-btn delete" onclick="deleteQuote(${q.id})">🗑️ <span class="btn-text">Delete</span></button></div>
+            <div class="action-icons"><button class="icon-btn" onclick="openQuoteModal('${q.id}')">✏️ <span class="btn-text">Edit</span></button><button class="icon-btn delete" onclick="deleteQuote('${q.id}')">🗑️ <span class="btn-text">Delete</span></button></div>
           </td>
         </tr>`;
     });
@@ -315,7 +313,7 @@ async function fetchQuotes() {
 
 function openQuoteModal(id) {
   document.getElementById('quoteModal').style.display = 'flex';
-  const q = quotesData.find(x => x.id === id);
+  const q = quotesData.find(x => x.id == id);
   document.getElementById('q_id').value = q.id; document.getElementById('q_name').value = q.name; document.getElementById('q_phone').value = q.phone;
   document.getElementById('q_email').value = q.email; document.getElementById('q_type').value = q.shoot_type; document.getElementById('q_dates').value = q.event_dates;
   document.getElementById('q_location').value = q.location; document.getElementById('q_budget').value = q.budget; document.getElementById('q_services').value = q.services;
@@ -327,23 +325,23 @@ async function saveQuote() {
     shoot_type: document.getElementById('q_type').value, event_dates: document.getElementById('q_dates').value, location: document.getElementById('q_location').value,
     budget: document.getElementById('q_budget').value, services: document.getElementById('q_services').value, vision_link: document.getElementById('q_vision').value, notes: document.getElementById('q_notes').value
   };
-  await fetch(`${API_BASE}/api/admin/quotes/${document.getElementById('q_id').value}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  await fetch(`/api/admin/quotes/${document.getElementById('q_id').value}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   closeModal('quoteModal'); fetchQuotes(); 
 }
-async function deleteQuote(id) { if(confirm("Delete this quote?")) { await fetch(`${API_BASE}/api/admin/quotes/${id}`, { method: 'DELETE' }); fetchQuotes(); } }
+async function deleteQuote(id) { if(confirm("Delete this quote?")) { await fetch(`/api/admin/quotes/${id}`, { method: 'DELETE' }); fetchQuotes(); } }
 
 /* ================= PACKAGES MANAGEMENT & GALLERY DROPDOWNS ================= */
 let packagesData = [];
 
 async function fetchPackages() {
   try {
-    const res = await fetch(`${API_BASE}/api/packages`);
+    const res = await fetch(`/api/packages`);
     const json = await res.json();
     packagesData = json.data || [];
-    packagesData.sort((a, b) => a.id - b.id);
+    packagesData.sort((a, b) => a.price - b.price);
     renderPackagesTable(packagesData);
     
-    // 👇 NEW: Update Gallery Category Dropdown with Real Data from Packages
+    // Update Gallery Category Dropdown with Real Data from Packages
     updateCategoryDropdowns(packagesData); 
   } catch (error) { console.error(error); }
 }
@@ -365,7 +363,7 @@ function updateCategoryDropdowns(data) {
     if(filterPkg) filterPkg.innerHTML += `<option value="${cat}">${titleCaseCat}</option>`;
     if(modalPkg) modalPkg.innerHTML += `<option value="${cat}">${titleCaseCat}</option>`;
     
-    // 👇 Inject into Gallery Dropdown
+    // Inject into Gallery Dropdown
     if(galleryCat) galleryCat.innerHTML += `<option value="${cat}">${titleCaseCat}</option>`;
   });
 }
@@ -393,8 +391,8 @@ function renderPackagesTable(dataToRender) {
         <td style="color:#ccc; font-size:12px; line-height:1.5;">• ${featList}</td>
         <td style="position: sticky; right: 0; background: #111; border-left: 1px solid #222;">
           <div class="action-icons">
-            <button class="icon-btn" onclick="openPackageModal(${p.id})">✏️ <span class="btn-text">Edit</span></button>
-            <button class="icon-btn delete" onclick="deletePackage(${p.id})">🗑️ <span class="btn-text">Delete</span></button>
+            <button class="icon-btn" onclick="openPackageModal('${p.id}')">✏️ <span class="btn-text">Edit</span></button>
+            <button class="icon-btn delete" onclick="deletePackage('${p.id}')">🗑️ <span class="btn-text">Delete</span></button>
           </div>
         </td>
       </tr>
@@ -416,7 +414,7 @@ function openPackageModal(id = null) {
   document.getElementById('packageModal').style.display = 'flex';
   if (id) {
     document.getElementById('packageModalTitle').innerText = "Edit Package";
-    const p = packagesData.find(x => x.id === id);
+    const p = packagesData.find(x => x.id == id);
     document.getElementById('p_id').value = p.id; document.getElementById('p_category').value = p.category;
     document.getElementById('p_title').value = p.title; document.getElementById('p_price').value = p.price;
     document.getElementById('p_features').value = p.features; document.getElementById('p_premium').value = p.is_premium;
@@ -434,16 +432,16 @@ async function savePackage() {
     is_premium: document.getElementById('p_premium').value
   };
   const id = document.getElementById('p_id').value;
-  await fetch(id ? `${API_BASE}/api/admin/packages/${id}` : `${API_BASE}/api/admin/packages`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  await fetch(id ? `/api/admin/packages/${id}` : `/api/admin/packages`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   closeModal('packageModal'); fetchPackages();
 }
 
-async function deletePackage(id) { if(confirm("Delete this package?")) { await fetch(`${API_BASE}/api/admin/packages/${id}`, { method: 'DELETE' }); fetchPackages(); } }
+async function deletePackage(id) { if(confirm("Delete this package?")) { await fetch(`/api/admin/packages/${id}`, { method: 'DELETE' }); fetchPackages(); } }
 
 /* ================= GALLERY MANAGEMENT ================= */
 async function fetchGallery() {
   try {
-    const res = await fetch(`${API_BASE}/api/gallery`);
+    const res = await fetch(`/api/gallery`);
     const json = await res.json();
     const grid = document.getElementById('galleryGrid');
     grid.innerHTML = '';
@@ -451,19 +449,22 @@ async function fetchGallery() {
     if (json.data && json.data.length > 0) {
       json.data.forEach(item => {
         let mediaHtml = '';
+        // 👇 Let the browser resolve relative /uploads/... URLs
+        const mediaUrl = item.url;
+        
         if (item.type === 'video') {
           // Changed to loop muted autoplay so it functions as an animated thumbnail
-          mediaHtml = `<video src="${item.url}" muted loop autoplay playsinline></video>`;
+          mediaHtml = `<video src="${mediaUrl}" muted loop autoplay playsinline></video>`;
         } else {
-          mediaHtml = `<img src="${item.url}" alt="${item.category}">`;
+          mediaHtml = `<img src="${mediaUrl}" alt="${item.category}">`;
         }
 
-        // 👇 Added onclick to view media full size
+        // Added onclick to view media full size
         grid.innerHTML += `
-          <div class="gallery-item" onclick="viewMedia('${item.url}', '${item.type}')">
+          <div class="gallery-item" onclick="viewMedia('${mediaUrl}', '${item.type}')">
             ${mediaHtml}
             <span class="badge">${item.category}</span>
-            <button class="delete-btn" onclick="event.stopPropagation(); deleteGalleryMedia(${item.id})">✖</button>
+            <button class="delete-btn" onclick="event.stopPropagation(); deleteGalleryMedia('${item.id}')">✖</button>
           </div>
         `;
       });
@@ -491,7 +492,7 @@ async function uploadGalleryMedia() {
   formData.append('type', type);
 
   try {
-    const res = await fetch(`${API_BASE}/api/admin/gallery`, {
+    const res = await fetch(`/api/admin/gallery`, {
       method: 'POST',
       body: formData 
     });
@@ -511,7 +512,7 @@ async function uploadGalleryMedia() {
 async function deleteGalleryMedia(id) {
   if (confirm("Are you sure you want to permanently delete this media file?")) {
     try {
-      await fetch(`${API_BASE}/api/admin/gallery/${id}`, { method: 'DELETE' });
+      await fetch(`/api/admin/gallery/${id}`, { method: 'DELETE' });
       fetchGallery(); 
     } catch (e) {
       console.log(e);
@@ -519,7 +520,7 @@ async function deleteGalleryMedia(id) {
   }
 }
 
-// 👇 NEW: View Media in Fullscreen Modal
+// View Media in Fullscreen Modal
 function viewMedia(url, type) {
   const modal = document.getElementById('mediaViewerModal');
   const content = document.getElementById('mediaViewerContent');
@@ -535,4 +536,3 @@ function viewMedia(url, type) {
   
   modal.style.display = 'flex';
 }
-

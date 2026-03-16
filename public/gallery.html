@@ -134,8 +134,6 @@
   </div>
 
   <script>
-    const API_BASE = window.location.origin.includes("localhost") ? window.location.origin : "http://localhost:3000";
-    
     // State variables
     let currentStep = 1; // 1: Category, 2: Type, 3: Gallery
     let selectedCategory = '';
@@ -160,7 +158,8 @@
     // Load entire database once on boot
     async function loadGallery() {
       try {
-        const res = await fetch(`${API_BASE}/api/gallery`);
+        // 👇 THE FIX: Using a relative path for Render and Localhost
+        const res = await fetch(`/api/gallery`);
         const json = await res.json();
         if (json.status === 'success') {
           mediaData = json.data;
@@ -262,8 +261,8 @@
       const item = filteredMedia[currentIndex];
       let mediaEl;
 
-      // Ensure API_BASE is attached for images to load properly
-      const mediaUrl = item.url.startsWith('http') ? item.url : API_BASE + item.url;
+      // 👇 THE FIX: Let the browser naturally resolve relative /uploads/... URLs
+      const mediaUrl = item.url;
       const itemType = String(item.type).toLowerCase();
 
       if (itemType === 'photo') {
