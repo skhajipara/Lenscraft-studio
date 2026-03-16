@@ -175,10 +175,11 @@ const staffDb = new sqlite3.Database("/data/LensCraft_Staff.db", (err) => {
 
 staffDb.serialize(() => {
   staffDb.run(`
-  CREATE TABLE IF NOT EXISTS staff_groups (
-    group_name TEXT UNIQUE,
-    email TEXT
-  )`);
+    CREATE TABLE IF NOT EXISTS staff_groups (
+      group_name TEXT UNIQUE,
+      email TEXT
+    )
+  `);
 
   const groups = [
     ['Group 1', 'hajiparasarvesh@gmail.com'],
@@ -515,7 +516,6 @@ function paymentUpdateTemplate(data) {
 
 /* ================= PUBLIC APIs ================= */
 
-// 👇 NEW: PUBLIC GALLERY API
 app.get("/api/gallery", (req, res) => {
   db.all(`SELECT * FROM gallery ORDER BY created_at DESC`, [], (err, rows) => {
     if (err) return res.json({ status: "error", data: [] });
@@ -607,7 +607,6 @@ app.post("/api/custom-quote", (req, res) => {
 
   db.run(
     `INSERT INTO custom_quotes (name, email, phone, shoot_type, event_dates, location, services, budget, vision_link, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    // 👇 THE FIX: Changed 'vision_link' to 'visionLink' in the array below
     [name, email, phone, shootType, dates, location, services, budget, visionLink, notes],
     async function(err) {
       if (err) return res.json({ status: "error" });
@@ -631,7 +630,6 @@ app.get("/api/stats", (req, res) => {
                  ADMIN PANEL APIs
 ======================================================= */
 
-// 1. GET ALL BOOKINGS
 app.get("/api/admin/bookings", (req, res) => {
   db.all(`SELECT * FROM bookings ORDER BY created_at DESC`, [], (err, rows) => {
     if (err) return res.json({ status: "error", data: [] });
@@ -639,7 +637,6 @@ app.get("/api/admin/bookings", (req, res) => {
   });
 });
 
-// 2. ADD MANUAL BOOKING
 app.post("/api/admin/bookings", (req, res) => {
   const { bookingId, name, phone, email, package: pkg, amount, from_date, to_date, pincode, location, assigned_group, payment_status, payment_method } = req.body;
   
@@ -661,7 +658,6 @@ app.post("/api/admin/bookings", (req, res) => {
   );
 });
 
-// 3. EDIT BOOKING
 app.put("/api/admin/bookings/:id", (req, res) => {
   const id = req.params.id;
   const newData = req.body;
@@ -699,7 +695,6 @@ app.put("/api/admin/bookings/:id", (req, res) => {
           }
         }
 
-        // 👇 THE FIX: Removed the "Pending" restriction so it emails on all status changes
         if (oldData.payment_status !== newData.payment_status && newData.payment_status !== "") {
           const invoiceData = { 
             ...emailData, 
@@ -723,16 +718,13 @@ app.put("/api/admin/bookings/:id", (req, res) => {
 });
 
 app.delete("/api/admin/bookings/:id", (req, res) => {
-  // 1. Fetch ALL data for this booking before deleting
-  db.get("SELECT * FROM bookings WHERE id=?", [req.params.id], async (err, row) => {
+  db.get(`SELECT * FROM bookings WHERE id=?`, [req.params.id], async (err, row) => {
     if (err || !row) return res.json({ status: "error" });
 
-    // 2. Delete Google Calendar Event if it exists
     if (row.calendar_event_id) { 
       await deleteGoogleEvent(row.calendar_event_id); 
     }
 
-    // 3. Prepare data and send cancellation email to the assigned staff group
     if (row.assigned_group) {
       const emailData = {
         bookingId: row.booking_id,
@@ -757,7 +749,6 @@ app.delete("/api/admin/bookings/:id", (req, res) => {
       });
     }
 
-    // 4. Finally, delete the record from the database
     db.run(`DELETE FROM bookings WHERE id=?`, [req.params.id], (err) => { 
       res.json({ status: "success" }); 
     });
@@ -843,19 +834,18 @@ app.post("/api/admin/gallery", upload.single("media"), (req, res) => {
 
 app.delete("/api/admin/gallery/:id", (req, res) => {
   const id = req.params.id;
-  db.get("SELECT url FROM gallery WHERE id = ?", [id], (err, row) => {
+  db.get(`SELECT url FROM gallery WHERE id = ?`, [id], (err, row) => {
     if (row && row.url) {
       const filePath = path.join(__dirname, 'public', row.url);
       if (fs.existsSync(filePath)) { fs.unlinkSync(filePath); } // Delete actual file from hard drive
     }
-    db.run("DELETE FROM gallery WHERE id = ?", [id], (err) => {
+    db.run(`DELETE FROM gallery WHERE id = ?`, [id], (err) => {
       res.json({ status: "success" });
     });
   });
 });
 
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
