@@ -124,6 +124,12 @@
       .top-header .logo { font-size: 18px; }
       
       .main-content, .main-content.expanded { margin-left: 0 !important; padding: 20px; width: 100%; }
+    }
+    @media (max-width: 768px) {
+      .top-header { padding: 0 15px; }
+      .top-header .logo { font-size: 18px; }
+      
+      .main-content, .main-content.expanded { margin-left: 0 !important; padding: 20px; width: 100%; }
       .sidebar { box-shadow: 5px 0 15px rgba(0,0,0,0.8); }
       .welcome-container { padding-left: 15px; height: 40vh; }
       .welcome-container h1 { font-size: 36px; }
@@ -147,6 +153,15 @@
       .gallery-upload-zone { grid-template-columns: 1fr; align-items: stretch; }
       .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
       .gallery-item { aspect-ratio: 1; }
+    }
+    @media (max-width: 768px) {
+      .top-header { padding: 0 10px; }
+      .top-header .logo { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+      .top-header .nav { display: flex; align-items: center; }
+      .top-header .nav a { font-size: 10px; white-space: nowrap; }
+      .top-header .nav a[onclick*="reloadDatabase"] { margin-left: 10px !important; }
+      
+      .main-content, .main-content.expanded { margin-left: 0 !important; padding: 20px; width: 100%; }
     }
   </style>
 </head>
@@ -173,6 +188,7 @@
         </a>
         <nav class="nav">
           <a href="#" onclick="goHome(); return false;">Home</a>
+          <a href="#" onclick="reloadDatabase(); return false;" style="margin-left: 20px; color: #95b191;">⟳ Reload Database</a>
         </nav>
       </div>
     </header>
@@ -256,7 +272,7 @@
                 <th>Finances (Total / Paid)</th>
                 <th>Payment Status</th><th>Payment Method</th>
                 <th>Assigned Group</th><th>Start Date & Time</th><th>End Date & Time</th><th>Pincode</th>
-                <th>Location Details</th><th>Date Submitted</th><th style="position: sticky; right: 0; background: #0a0a0a;">Actions</th>
+                <th>Location Details</th><th>Date Submitted</th><th>Shoot Status</th><th style="position: sticky; right: 0; background: #0a0a0a;">Actions</th>
               </tr>
             </thead>
             <tbody id="bookingsTableBody"></tbody>
@@ -399,7 +415,7 @@
           </select>
         </div>
         
-        <div class="modal-row">
+        <div class="modal-row" style="align-items: center;">
           <div class="form-group">
             <label style="color:#fff;">Payment Status (Triggers receipt email)</label>
             <select id="b_payStatus" style="appearance: auto;">
@@ -410,6 +426,13 @@
             </select>
           </div>
           <div class="form-group"><label>Transaction Method</label><input type="text" id="b_payMethod" placeholder="e.g. Bank Transfer"></div>
+          <div class="form-group">
+            <label style="color:#ffb703;">Shoot Status</label>
+            <select id="b_shootStatus" style="appearance: auto; border: 1px solid #ffb703;">
+              <option value="Pending">Pending</option>
+              <option value="Done">Done</option>
+            </select>
+          </div>
         </div>
         
         <div class="modal-actions">

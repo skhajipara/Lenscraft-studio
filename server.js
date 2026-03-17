@@ -61,6 +61,7 @@ const bookingSchema = new mongoose.Schema({
   assigned_group: String,
   payment_status: { type: String, default: '' },
   payment_method: { type: String, default: '' },
+  shoot_status: { type: String, default: 'Pending' }, // <-- NEW COLUMN
   calendar_event_id: String,
   created_at: { type: Date, default: Date.now }
 });
@@ -501,7 +502,7 @@ app.post("/api/book", async (req, res) => {
   const finalizeBooking = async (assignedGroup) => {
     try {
       const newBooking = await Booking.create({
-        booking_id: bookingId, name, phone, email, package: packageName, amount, from_date: from, to_date: to, pincode, location, assigned_group: assignedGroup, payment_status: '', payment_method: ''
+        booking_id: bookingId, name, phone, email, package: packageName, amount, from_date: from, to_date: to, pincode, location, assigned_group: assignedGroup, payment_status: '', payment_method: '', shoot_status: 'Pending'
       });
       
       const data = { bookingId, pincode, name, phone, email, package: packageName, amount, from, to, location, assignedGroup };
@@ -583,10 +584,24 @@ app.get("/api/admin/bookings", async (req, res) => {
 });
 
 app.post("/api/admin/bookings", async (req, res) => {
-  const { bookingId, name, phone, email, package: pkg, amount, from_date, to_date, pincode, location, assigned_group, payment_status, payment_method } = req.body;
+  const { bookingId, name, phone, email, package: pkg, amount, from_date, to_date, pincode, location, assigned_group, payment_status, payment_method, shoot_status } = req.body;
   
   try {
-    const newBooking = await Booking.create({ booking_id: bookingId, name, phone, email, package: pkg, amount, from_date, to_date, pincode, location, assigned_group, payment_status, payment_method });
+    // --- NEW: Check for group time conflict ---
+    if (assigned_group && assigned_group !== "") {
+      const conflict = await Booking.findOne({
+        assigned_group: assigned_group,
+        from_date: { $lt: to_date },
+        to_date: { $gt: from_date }
+      });
+
+      if (conflict) {
+        return res.json({ status: "conflict", message: `${assigned_group} already has a shoot scheduled for this time period.` });
+      }
+    }
+    // ------------------------------------------
+
+    const newBooking = await Booking.create({ booking_id: bookingId, name, phone, email, package: pkg, amount, from_date, to_date, pincode, location, assigned_group, payment_status, payment_method, shoot_status: shoot_status || 'Pending' });
     const eventData = { bookingId, name, phone, package: pkg, from: from_date, to: to_date, location, assignedGroup: assigned_group };
     const eventId = await createGoogleEvent(eventData);
     if (eventId) {
@@ -604,8 +619,23 @@ app.put("/api/admin/bookings/:id", async (req, res) => {
     const oldData = await Booking.findById(id);
     if (!oldData) return res.json({ status: "error" });
 
+    // --- NEW: Check for group time conflict ---
+    if (newData.assigned_group && newData.assigned_group !== "") {
+      const conflict = await Booking.findOne({
+        _id: { $ne: id }, // Exclude current booking from the conflict check
+        assigned_group: newData.assigned_group,
+        from_date: { $lt: newData.to_date },
+        to_date: { $gt: newData.from_date }
+      });
+
+      if (conflict) {
+        return res.json({ status: "conflict", message: `Group ${newData.assigned_group} already has a shoot scheduled for this time period.` });
+      }
+    }
+    // ------------------------------------------
+
     await Booking.findByIdAndUpdate(id, {
-      booking_id: newData.bookingId, name: newData.name, phone: newData.phone, email: newData.email, package: newData.package, amount: newData.amount, paid_amount: newData.paid_amount, from_date: newData.from_date, to_date: newData.to_date, pincode: newData.pincode, location: newData.location, assigned_group: newData.assigned_group, payment_status: newData.payment_status, payment_method: newData.payment_method
+      booking_id: newData.bookingId, name: newData.name, phone: newData.phone, email: newData.email, package: newData.package, amount: newData.amount, paid_amount: newData.paid_amount, from_date: newData.from_date, to_date: newData.to_date, pincode: newData.pincode, location: newData.location, assigned_group: newData.assigned_group, payment_status: newData.payment_status, payment_method: newData.payment_method, shoot_status: newData.shoot_status || 'Pending'
     });
 
     const emailData = { 
@@ -774,6 +804,79 @@ app.delete("/api/admin/gallery/:id", async (req, res) => {
     res.json({ status: "success" });
   } catch(err) { res.json({ status: "error" }); }
 });
+
+// 👇 NEW: MANUAL DATABASE RELOAD API 👇
+app.post("/api/admin/reload-database", async (req, res) => {
+  try {
+    let seeded = false;
+
+    // Check & Seed Packages
+    const packageCount = await Package.countDocuments();
+    if (packageCount === 0) {
+      const defaultPkgs = [
+        { category: 'wedding', title: 'Basic Wedding', price: 25000, features: '1 Traditional Photographer\n1 Traditional Videographer\nFull Ceremony Coverage\n10 Photo Editing\nStandard Highlight Video', is_premium: 0 },
+        { category: 'wedding', title: 'Classic Wedding', price: 35000, features: '1 Traditional Photographer\n1 Videographer\nFull Event Coverage\n1 Instagram Reel\nSelected Photo Editing', is_premium: 0 },
+        { category: 'wedding', title: 'Cinematic Wedding', price: 45000, features: '1 Candid Photographer\n1 Cinematic Videographer\nFull Wedding Coverage\n2 Instagram Reels\nSelected Photo Editing', is_premium: 0 },
+        { category: 'wedding', title: 'Premium Wedding', price: 60000, features: 'DSLR Photography\n4K Cinematic Videography\n3 Instagram Reels\nSelected Photo Editing\nCloud Gallery Upload', is_premium: 1 },
+        { category: 'wedding', title: 'Luxury Wedding', price: 80000, features: 'DSLR Candid Photographer\n4K Cinematic Video with Gimbal\nDrone Coverage\n4 Instagram Reels\nSelected Photo Editing\nCloud Gallery Upload', is_premium: 1 },
+        { category: 'wedding', title: 'Royal Wedding', price: 100000, features: 'DSLR Photography Team\n4K Cinematic Film\n4K Drone Coverage\nSelected Photo Editing\nWedding Teaser + Full Film\nPremium Digital Photo Album', is_premium: 1 },
+        { category: 'engagement', title: 'Ring Ceremony Basic', price: 15000, features: 'DSLR Photography\n1 Short Video\nFull Event Coverage\n15 Edited Photos', is_premium: 0 },
+        { category: 'engagement', title: 'Classic Engagement', price: 25000, features: 'DSLR Photography\n4K Videography\nHighlight Video\nSelected Photos Editing\n1 Instagram Reel', is_premium: 0 },
+        { category: 'engagement', title: 'Premium Engagement', price: 35000, features: 'Candid Photographer\nCinematic Videographer\n2 Instagram Reels\nSelected Photos Editing\nDigital Album', is_premium: 1 },
+        { category: 'prewedding', title: 'Couple Portrait Shoot', price: 15000, features: 'Outdoor Photography\n2 Outfit Changes\n5 Photos Editing', is_premium: 0 },
+        { category: 'prewedding', title: 'Story-Based Shoot', price: 20000, features: '1 Day Outdoor Shoot\nCandid Photography\n2-3 Outfit Changes\n15 Photos Editing', is_premium: 0 },
+        { category: 'prewedding', title: 'Cinematic Love Story', price: 35000, features: 'Photography & Videography\nDrone Shots\n1 Minute Cinematic Trailer\nSelected Retouched Images', is_premium: 0 },
+        { category: 'prewedding', title: 'Luxury Pre-Wedding', price: 50000, features: 'Multiple Locations\nCinematic Video Shoot\nDrone Coverage\nSelected Retouched Images', is_premium: 1 },
+        { category: 'birthday', title: 'Birthday Basic', price: 8000, features: 'Event Photography\nCake Cutting Coverage', is_premium: 0 },
+        { category: 'birthday', title: 'Birthday Celebration', price: 15000, features: 'Photography\nVideography\nFull Event Coverage', is_premium: 0 },
+        { category: 'birthday', title: 'Birthday Premium', price: 25000, features: 'DSLR Photography\nHighlight Video\n1 Instagram Reel\nSelected Retouched Photos', is_premium: 1 },
+        { category: 'baby', title: 'Standard Baby Shoot', price: 2000, features: '2 Hour Studio Session\n2 Theme Setups\n5 Photos Editing', is_premium: 0 },
+        { category: 'baby', title: 'Creative Baby Shoot', price: 4000, features: '2-3 Theme Setups\nBaby + Family Photos\n10 Photos Editing', is_premium: 0 },
+        { category: 'baby', title: 'Premium Baby Shoot', price: 6000, features: '3 Hour Studio Session\n3-4 Theme Setups\nFamily Photos Included\nSelected Retouched Photos', is_premium: 1 },
+        { category: 'anniversary', title: 'Anniversary Basic', price: 10000, features: 'Event Photography\nCouple Portrait Session\n5 Edited Photos', is_premium: 0 },
+        { category: 'anniversary', title: 'Anniversary Celebration', price: 18000, features: 'Photography & Videography\nFull Event Coverage\nHighlight Video', is_premium: 0 },
+        { category: 'anniversary', title: 'Anniversary Premium', price: 30000, features: 'DSLR Photography\nCinematic Videography\n1 Instagram Reel\n10 Edited Photos', is_premium: 1 },
+        { category: 'concert', title: 'Concert Basic', price: 20000, features: 'Stage Photography\nCrowd Coverage\nPerformance Highlights\nSelected Photos Edited', is_premium: 0 },
+        { category: 'concert', title: 'Concert Event Coverage', price: 40000, features: 'Photography & Videography\nFull Show Coverage\nHighlight Video\nSelected Photos Edited', is_premium: 0 },
+        { category: 'concert', title: 'Concert Cinematic', price: 60000, features: 'DSLR Photography\n4K Video Coverage\nDrone Shots\nEvent Highlight Film', is_premium: 1 },
+        { category: 'corporate', title: 'Corporate Basic', price: 15000, features: 'Event Photography\nSpeaker Coverage\n10 Edited Photos', is_premium: 0 },
+        { category: 'corporate', title: 'Corporate Professional', price: 30000, features: 'Photography & Videography\nFull Event Coverage\nHighlight Video', is_premium: 0 },
+        { category: 'corporate', title: 'Corporate Premium', price: 50000, features: 'DSLR Photography\n4K Video Coverage\nPromotional Highlight Video\nSelected Edited Photos', is_premium: 1 },
+        { category: 'fashion', title: 'Model Portfolio Basic', price: 10000, features: 'Indoor / Outdoor Shoot\n2 Outfit Changes\n10 Retouched Photos', is_premium: 0 },
+        { category: 'fashion', title: 'Professional Portfolio', price: 18000, features: 'Fashion Photography\n3 Outfit Changes\n20 Retouched Photos', is_premium: 0 },
+        { category: 'fashion', title: 'Fashion Premium', price: 30000, features: 'Professional Photography\nCinematic Video Reel\n4 Outfit Changes\nSelected Retouched Photos', is_premium: 1 },
+        { category: 'religious', title: 'Traditional Event Coverage', price: 12000, features: 'Ritual Photography\nEvent Coverage\n5 Edited Photos', is_premium: 0 },
+        { category: 'religious', title: 'Festival Coverage', price: 25000, features: 'Photography & Videography\nFull Event Coverage\nHighlight Video', is_premium: 0 },
+        { category: 'religious', title: 'Premium Festival', price: 40000, features: 'DSLR Photography\n4K Video Coverage\nDrone Shots\nSelected Photos Edited', is_premium: 1 }
+      ];
+      await Package.insertMany(defaultPkgs);
+      seeded = true;
+    }
+
+    // Check & Seed Staff Groups
+    const staffCount = await StaffGroup.countDocuments();
+    if (staffCount === 0) {
+      const defaultGroups = [
+        { group_name: 'Group 1', email: 'hajiparasarvesh@gmail.com' },
+        { group_name: 'Group 2', email: 'sarveshhajipara@gmail.com' },
+        { group_name: 'Group 3', email: '2305101020023@paruluniversity.ac.in' },
+        { group_name: 'Group 4', email: 'ishagojariya@gmail.com' }
+      ];
+      await StaffGroup.insertMany(defaultGroups);
+      seeded = true;
+    }
+
+    if (seeded) {
+      res.json({ status: "success", message: "Database re-seeded successfully." });
+    } else {
+      res.json({ status: "info", message: "Database is already fully populated." });
+    }
+  } catch(err) {
+    console.error("Manual reload error:", err);
+    res.json({ status: "error", message: "Failed to reload database." });
+  }
+});
+// 👆 END NEW API 👆
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

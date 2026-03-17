@@ -6,13 +6,23 @@ window.addEventListener('load', () => {
   setTimeout(() => {
     document.getElementById('preloader').classList.add('preloader-hidden');
     setTimeout(() => {
-      const password = prompt("Authorized Personnel Only.\nEnter Security Key:");
-      if (password === "LensCraft@22") {
+      
+      // 👇 NEW: Check if already logged in during this session
+      if (sessionStorage.getItem("LensCraftAuth") === "true") {
         document.getElementById("adminApp").style.display = "block";
         loadData();
       } else {
-        document.body.innerHTML = "<div style='display:flex; height:100vh; align-items:center; justify-content:center;'><h1 style='font-size:3rem; font-weight:200; color:#555;'>Access Denied.</h1></div>";
+        // If not logged in, ask for password
+        const password = prompt("Authorized Personnel Only.\nEnter Security Key:");
+        if (password === "LensCraft@22") {
+          sessionStorage.setItem("LensCraftAuth", "true"); // Save login memory
+          document.getElementById("adminApp").style.display = "block";
+          loadData();
+        } else {
+          document.body.innerHTML = "<div style='display:flex; height:100vh; align-items:center; justify-content:center;'><h1 style='font-size:3rem; font-weight:200; color:#555;'>Access Denied.</h1></div>";
+        }
       }
+
     }, 500);
   }, 1000); 
 });
@@ -29,6 +39,20 @@ function goHome() {
   if (welcome) welcome.classList.add('active');
   document.getElementById('sidebar').classList.add('hidden');
   document.getElementById('mainContent').classList.add('expanded');
+}
+
+// 👇 NEW: Direct Full Page Reload without password 👇
+async function reloadDatabase() {
+  const btn = document.querySelector('.nav a[onclick="reloadDatabase(); return false;"]');
+  if (btn) btn.innerHTML = "⏳ Reloading...";
+  
+  try {
+    // Tell backend to re-seed missing data
+    await fetch('/api/admin/reload-database', { method: 'POST' });
+  } catch (e) {}
+
+  // Instantly execute a hard page reload (will bypass password prompt!)
+  window.location.reload();
 }
 
 function switchTab(tab) {
@@ -53,7 +77,6 @@ function loadData() {
 function closeModal(modalId) { 
   document.getElementById(modalId).style.display = 'none'; 
   
-  // Clean up media viewer if closed
   if (modalId === 'mediaViewerModal') {
     document.getElementById('mediaViewerContent').innerHTML = '';
   }
@@ -121,7 +144,7 @@ async function saveStaff() {
 }
 async function deleteStaff(id) { if(confirm("Delete this team?")) { await fetch(`/api/admin/staff/${id}`, { method: 'DELETE' }); fetchStaff(); } }
 
-/* ================= BOOKINGS MANAGEMENT & FILTERS ================= */
+/* ================= BOOKINGS MANAGEMENT ================= */
 let bookingsData = [];
 
 async function fetchBookings() {
@@ -139,7 +162,7 @@ function renderBookingsTable(dataToRender) {
   tbody.innerHTML = '';
   
   if (dataToRender.length === 0) { 
-    tbody.innerHTML = '<tr><td colspan="16" style="text-align:center; padding: 40px; color:#555;">No records match your criteria.</td></tr>'; 
+    tbody.innerHTML = '<tr><td colspan="17" style="text-align:center; padding: 40px; color:#555;">No records match your criteria.</td></tr>'; 
     return; 
   }
 
@@ -151,6 +174,9 @@ function renderBookingsTable(dataToRender) {
 
     const istDate = formatToIST(b.created_at);
     const amtPaidStr = b.paid_amount && b.paid_amount !== '0' ? `₹${Number(b.paid_amount).toLocaleString('en-IN')}` : '₹0';
+
+    const currentShootStatus = b.shoot_status || 'Pending';
+    const shootStatusColor = currentShootStatus === 'Done' ? '#2ecc71' : '#f39c12';
 
     tbody.innerHTML += `
       <tr>
@@ -165,6 +191,7 @@ function renderBookingsTable(dataToRender) {
         <td>${b.payment_method || '-'}</td><td><b style="color:#fff;">${b.assigned_group || '-'}</b></td>
         <td>${b.from_date ? b.from_date.replace('T', ' ') : '-'}</td><td>${b.to_date ? b.to_date.replace('T', ' ') : '-'}</td>
         <td>${b.pincode || '-'}</td><td>${b.location}</td><td style="color:#666; font-size:12px;">${istDate}</td>
+        <td><b style="color:${shootStatusColor};">${currentShootStatus}</b></td>
         <td style="position: sticky; right: 0; background: #111; border-left: 1px solid #222;">
           <div class="action-icons"><button class="icon-btn" onclick="openBookingModal('${b.id}')">✏️ <span class="btn-text">Edit</span></button><button class="icon-btn delete" onclick="deleteBooking('${b.id}')">🗑️ <span class="btn-text">Delete</span></button></div>
         </td>
@@ -230,6 +257,7 @@ function openBookingModal(id = null) {
     document.getElementById('b_group').value = b.assigned_group || ''; 
     document.getElementById('b_payStatus').value = b.payment_status || ''; 
     document.getElementById('b_payMethod').value = b.payment_method || '';
+    document.getElementById('b_shootStatus').value = b.shoot_status || 'Pending';
   } else {
     document.getElementById('b_id').value = ""; 
     document.getElementById('b_bookingId').value = "LCS" + Date.now().toString().slice(-8); 
@@ -246,6 +274,7 @@ function openBookingModal(id = null) {
     document.getElementById('b_group').value = ""; 
     document.getElementById('b_payStatus').value = ""; 
     document.getElementById('b_payMethod').value = "";
+    document.getElementById('b_shootStatus').value = 'Pending';
   }
 }
 
@@ -261,6 +290,41 @@ async function saveBooking() {
     return;
   }
 
+  // Variables for Conflict Check
+  const fromDateStr = document.getElementById('b_from').value;
+  const toDateStr = document.getElementById('b_to').value;
+  const assignedGroup = document.getElementById('b_group').value;
+  const currentId = document.getElementById('b_id').value;
+
+  // 👇 FOOLPROOF FRONTEND CONFLICT CHECK 👇
+  if (assignedGroup && assignedGroup !== "") {
+    const conflict = bookingsData.find(b => {
+      if (currentId && b.id == currentId) return false; // Ignore itself when editing
+      if (b.assigned_group !== assignedGroup) return false; // Different group
+      if (!b.from_date || !b.to_date) return false;
+      // Check if dates overlap
+      return (b.from_date < toDateStr && b.to_date > fromDateStr);
+    });
+
+    if (conflict) {
+      const conflictMsg = `Team ${assignedGroup} is already booked for another event between:\n\n${conflict.from_date.replace('T', ' ')}  and  ${conflict.to_date.replace('T', ' ')}.\n\nPlease select a different team or change the time.`;
+      
+      const customModal = document.getElementById('customAlertModal');
+      const customText = document.getElementById('customAlertText');
+      
+      if (customModal && customText) {
+        // Show middle of screen dark modal
+        customText.innerText = conflictMsg;
+        customModal.style.display = 'flex';
+      } else {
+        // Failsafe regular alert
+        alert(`⚠️ SCHEDULING CONFLICT ⚠️\n\n` + conflictMsg);
+      }
+      return; // STOP SAVE
+    }
+  }
+  // 👆 END CONFLICT CHECK 👆
+
   const payload = {
     bookingId: document.getElementById('b_bookingId').value, 
     name: document.getElementById('b_name').value, 
@@ -269,17 +333,24 @@ async function saveBooking() {
     package: document.getElementById('b_package').value, 
     amount: amountStr,
     paid_amount: paidStr, 
-    from_date: document.getElementById('b_from').value, 
-    to_date: document.getElementById('b_to').value, 
+    from_date: fromDateStr, 
+    to_date: toDateStr, 
     pincode: document.getElementById('b_pincode').value,
     location: document.getElementById('b_location').value, 
-    assigned_group: document.getElementById('b_group').value, 
+    assigned_group: assignedGroup, 
     payment_status: document.getElementById('b_payStatus').value,
-    payment_method: document.getElementById('b_payMethod').value
+    payment_method: document.getElementById('b_payMethod').value,
+    shoot_status: document.getElementById('b_shootStatus').value
   };
-  const id = document.getElementById('b_id').value;
-  await fetch(id ? `/api/admin/bookings/${id}` : `/api/admin/bookings`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-  closeModal('bookingModal'); fetchBookings(); 
+  
+  await fetch(currentId ? `/api/admin/bookings/${currentId}` : `/api/admin/bookings`, { 
+    method: currentId ? 'PUT' : 'POST', 
+    headers: { 'Content-Type': 'application/json' }, 
+    body: JSON.stringify(payload) 
+  });
+  
+  closeModal('bookingModal'); 
+  fetchBookings(); 
 }
 
 async function deleteBooking(id) { if(confirm("Delete this booking?")) { await fetch(`/api/admin/bookings/${id}`, { method: 'DELETE' }); fetchBookings(); } }
@@ -341,13 +412,11 @@ async function fetchPackages() {
     packagesData.sort((a, b) => a.price - b.price);
     renderPackagesTable(packagesData);
     
-    // Update Gallery Category Dropdown with Real Data from Packages
     updateCategoryDropdowns(packagesData); 
   } catch (error) { console.error(error); }
 }
 
 function updateCategoryDropdowns(data) {
-  // Extract unique categories from packages
   const uniqueCategories = [...new Set(data.map(p => p.category.toLowerCase()))];
   
   const filterPkg = document.getElementById('filterPackageCategory');
@@ -356,14 +425,12 @@ function updateCategoryDropdowns(data) {
 
   if(filterPkg) filterPkg.innerHTML = '<option value="all">Sort: All Categories</option>';
   if(modalPkg) modalPkg.innerHTML = '';
-  if(galleryCat) galleryCat.innerHTML = ''; // Clear gallery dropdown
+  if(galleryCat) galleryCat.innerHTML = '';
 
   uniqueCategories.forEach(cat => {
     const titleCaseCat = cat.charAt(0).toUpperCase() + cat.slice(1);
     if(filterPkg) filterPkg.innerHTML += `<option value="${cat}">${titleCaseCat}</option>`;
     if(modalPkg) modalPkg.innerHTML += `<option value="${cat}">${titleCaseCat}</option>`;
-    
-    // Inject into Gallery Dropdown
     if(galleryCat) galleryCat.innerHTML += `<option value="${cat}">${titleCaseCat}</option>`;
   });
 }
@@ -449,17 +516,14 @@ async function fetchGallery() {
     if (json.data && json.data.length > 0) {
       json.data.forEach(item => {
         let mediaHtml = '';
-        // 👇 Let the browser resolve relative /uploads/... URLs
         const mediaUrl = item.url;
         
         if (item.type === 'video') {
-          // Changed to loop muted autoplay so it functions as an animated thumbnail
           mediaHtml = `<video src="${mediaUrl}" muted loop autoplay playsinline></video>`;
         } else {
           mediaHtml = `<img src="${mediaUrl}" alt="${item.category}">`;
         }
 
-        // Added onclick to view media full size
         grid.innerHTML += `
           <div class="gallery-item" onclick="viewMedia('${mediaUrl}', '${item.type}')">
             ${mediaHtml}
@@ -520,15 +584,11 @@ async function deleteGalleryMedia(id) {
   }
 }
 
-// View Media in Fullscreen Modal
 function viewMedia(url, type) {
   const modal = document.getElementById('mediaViewerModal');
   const content = document.getElementById('mediaViewerContent');
   
   if (type === 'video') {
-    // Standard video tag. 
-    // controls = shows the play button.
-    // preload="none" = saves maximum memory, won't load until clicked.
     content.innerHTML = `<video src="${url}" controls preload="none"></video>`;
   } else {
     content.innerHTML = `<img src="${url}">`;
