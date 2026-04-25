@@ -588,28 +588,64 @@ app.post("/api/admin/bookings", async (req, res) => {
   const { bookingId, name, phone, email, package: pkg, amount, from_date, to_date, pincode, location, assigned_group, payment_status, payment_method, shoot_status } = req.body;
   
   try {
-    // --- NEW: Check for group time conflict ---
+    // --- CONFLICT LOGIC ---
     if (assigned_group && assigned_group !== "") {
-      const conflict = await Booking.findOne({
-        assigned_group: assigned_group,
-        from_date: { $lt: to_date },
-        to_date: { $gt: from_date }
+      const groupBookings = await Booking.find({ assigned_group: assigned_group });
+      const conflict = groupBookings.find(b => {
+        if (!b.from_date || !b.to_date) return false;
+        return (b.from_date < to_date && b.to_date > from_date);
       });
-
+      
       if (conflict) {
-        return res.json({ status: "conflict", message: `${assigned_group} already has a shoot scheduled for this time period.` });
+        return res.json({ 
+          status: "conflict", 
+          message: `Team ${assigned_group} is already booked from ${conflict.from_date.replace('T', ' ')} to ${conflict.to_date.replace('T', ' ')}.` 
+        });
       }
     }
-    // ------------------------------------------
+    // ----------------------
 
     const newBooking = await Booking.create({ booking_id: bookingId, name, phone, email, package: pkg, amount, from_date, to_date, pincode, location, assigned_group, payment_status, payment_method, shoot_status: shoot_status || 'Pending' });
-    const eventData = { bookingId, name, phone, package: pkg, from: from_date, to: to_date, location, assignedGroup: assigned_group };
+    
+    // Data object for Calendar and Emails
+    const eventData = { bookingId, name, phone, email, package: pkg, amount, from: from_date, to: to_date, pincode, location, assignedGroup: assigned_group };
+    
+    // Create Calendar Event
     const eventId = await createGoogleEvent(eventData);
     if (eventId) {
       await Booking.findByIdAndUpdate(newBooking._id, { calendar_event_id: eventId });
     }
+
+    // 👇 NEW: SEND EMAILS ON MANUAL ADMIN ENTRY 👇
+    if (email) {
+      // Send confirmation to the client
+      await transporter.sendMail({ 
+        from: process.env.EMAIL_USER, 
+        to: email, 
+        subject: `Booking Confirmed - LensCraft Studio [${bookingId}]`, 
+        html: clientTemplate(eventData) 
+      });
+    }
+
+    if (assigned_group) {
+      // Find the staff group's email and send them the assignment
+      const staffRow = await StaffGroup.findOne({ group_name: assigned_group });
+      if (staffRow && staffRow.email) {
+        await transporter.sendMail({ 
+          from: process.env.EMAIL_USER, 
+          to: staffRow.email, 
+          subject: `New Shoot Assigned - [${bookingId}]`, 
+          html: staffTemplate(eventData) 
+        });
+      }
+    }
+    // 👆 END EMAIL LOGIC 👆
+
     res.json({ status: "success" });
-  } catch(err) { res.json({ status: "error" }); }
+  } catch(err) { 
+    console.log("Admin Booking Error:", err);
+    res.json({ status: "error" }); 
+  }
 });
 
 app.put("/api/admin/bookings/:id", async (req, res) => {

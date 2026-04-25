@@ -391,8 +391,12 @@
         <div class="form-group"><label>Electronic Mail</label><input type="text" id="b_email"></div>
         
         <div class="modal-row">
-          <div class="form-group" style="flex:2;"><label>Selected Package</label><input type="text" id="b_package"></div>
-          <div class="form-group"><label>Total Amount</label><input type="text" id="b_amount"></div>
+          <div class="form-group" style="flex:2;">
+            <label>Selected Package</label>
+            <select id="b_package" style="appearance: auto;">
+              <option value="Manual Entry">Manual Entry</option>
+              </select>
+          </div>          <div class="form-group"><label>Total Amount</label><input type="text" id="b_amount"></div>
           <div class="form-group"><label style="color:#2ecc71;">Amount Paid (₹)</label><input type="number" id="b_paidAmount" placeholder="e.g. 10000"></div>
         </div>
 
@@ -400,10 +404,27 @@
           <div class="form-group"><label>Commencement Date/Time</label><input type="datetime-local" id="b_from"></div>
           <div class="form-group"><label>Conclusion Date/Time</label><input type="datetime-local" id="b_to"></div>
         </div>
+
+        <div id="daySchedulePreview" style="display: none; background: #0a0a0a; border: 1px solid #333; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+          <h4 style="color: #ffb703; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            Existing Schedule for this Day
+          </h4>
+          <div id="scheduleList" style="font-size: 12px; color: #aaa; line-height: 1.6;">
+            </div>
+        </div>
         
         <div class="modal-row">
-          <div class="form-group"><label>Postal Code</label><input type="text" id="b_pincode"></div>
-          <div class="form-group" style="flex:2;"><label>Venue</label><input type="text" id="b_location"></div>
+          <div class="form-group">
+            <label>Postal Code <span id="pinStatus" style="font-size: 10px; margin-left: 5px;"></span></label>
+            <input type="text" id="b_pincode" maxlength="6" placeholder="e.g. 360005">
+          </div>    
+
+          <div class="form-group" style="flex:2;">
+            <label>Venue</label>
+            <input type="text" id="b_location" list="locationOptions" autocomplete="off" placeholder="Type pincode first, or enter manually">
+            <datalist id="locationOptions"></datalist>
+          </div>
         </div>
         
         <hr style="border:0; border-top:1px solid var(--border-color); margin: 30px 0;">

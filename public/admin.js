@@ -117,8 +117,10 @@ async function fetchStaff() {
   if (staffData.length === 0) { 
     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 40px; color:#555;">No teams registered.</td></tr>'; 
   } else {
-    staffData.forEach(s => {
-      tbody.innerHTML += `<tr><td style="color:#555;">${s.id}</td><td style="color:#fff; font-weight:500;">${s.group_name}</td><td style="color:#aaa;">${s.email}</td>
+    // 👇 Added 'index' here to count rows
+    staffData.forEach((s, index) => {
+      // 👇 Replaced s.id with (index + 1) for a normal number
+      tbody.innerHTML += `<tr><td style="color:#555;">${index + 1}</td><td style="color:#fff; font-weight:500;">${s.group_name}</td><td style="color:#aaa;">${s.email}</td>
         <td><div class="action-icons"><button class="icon-btn" onclick="openStaffModal('${s.id}')">✏️ <span class="btn-text">Edit</span></button><button class="icon-btn delete" onclick="deleteStaff('${s.id}')">🗑️ <span class="btn-text">Delete</span></button></div></td></tr>`;
     });
   }
@@ -166,7 +168,8 @@ function renderBookingsTable(dataToRender) {
     return; 
   }
 
-  dataToRender.forEach(b => {
+  // 👇 Added 'index' here
+  dataToRender.forEach((b, index) => {
     let dbStatus = b.payment_status === "" ? "Awaiting Response" : (b.payment_status || 'Pending');
     let payClass = 'status-pending';
     if(dbStatus.toLowerCase() === 'paid') payClass = 'status-paid';
@@ -174,13 +177,12 @@ function renderBookingsTable(dataToRender) {
 
     const istDate = formatToIST(b.created_at);
     const amtPaidStr = b.paid_amount && b.paid_amount !== '0' ? `₹${Number(b.paid_amount).toLocaleString('en-IN')}` : '₹0';
-
     const currentShootStatus = b.shoot_status || 'Pending';
     const shootStatusColor = currentShootStatus === 'Done' ? '#2ecc71' : '#f39c12';
 
     tbody.innerHTML += `
       <tr>
-        <td style="color:#555;">${b.id}</td><td style="font-family:monospace; color:#ccc;">${b.booking_id}</td>
+        <td style="color:#555;">${index + 1}</td><td style="font-family:monospace; color:#ccc;">${b.booking_id}</td>
         <td><b style="color:#fff;">${b.name}</b></td><td>${b.phone}</td><td style="color:#aaa;">${b.email}</td>
         <td>${b.package}</td>
         <td>
@@ -247,7 +249,12 @@ function openBookingModal(id = null) {
     document.getElementById('b_name').value = b.name; 
     document.getElementById('b_phone').value = b.phone;
     document.getElementById('b_email').value = b.email; 
-    document.getElementById('b_package').value = b.package;
+    // 👇 NEW: Safely set the dropdown value, even if it's an old deleted package 👇
+    const packageDropdown = document.getElementById('b_package');
+    if (!packageDropdown.querySelector(`option[value="${b.package}"]`)) {
+      packageDropdown.innerHTML += `<option value="${b.package}">${b.package}</option>`;
+    }
+    packageDropdown.value = b.package;
     document.getElementById('b_amount').value = b.amount; 
     document.getElementById('b_paidAmount').value = b.paid_amount || '';
     document.getElementById('b_from').value = b.from_date;
@@ -276,6 +283,15 @@ function openBookingModal(id = null) {
     document.getElementById('b_payMethod').value = "";
     document.getElementById('b_shootStatus').value = 'Pending';
   }
+  // Reset schedule preview when opening modal
+  document.getElementById('daySchedulePreview').style.display = 'none';
+  
+  // Listen for date changes
+  document.getElementById('b_from').removeEventListener('change', updateDaySchedulePreview);
+  document.getElementById('b_from').addEventListener('change', updateDaySchedulePreview);
+
+  // If we are editing an existing booking, show the schedule immediately
+  if (id) updateDaySchedulePreview();
 }
 
 async function saveBooking() {
@@ -367,10 +383,11 @@ async function fetchQuotes() {
     tbody.innerHTML = '';
     if(quotesData.length === 0) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center; padding: 40px; color:#555;">No inquiries found.</td></tr>'; return; }
 
-    quotesData.forEach(q => {
+    // 👇 Added 'index' here
+    quotesData.forEach((q, index) => {
       tbody.innerHTML += `
         <tr>
-          <td style="color:#555;">Q-${q.id}</td><td><b style="color:#fff;">${q.name}</b></td><td>${q.phone}</td><td style="color:#aaa;">${q.email}</td>
+          <td style="color:#555;">${index + 1}</td><td><b style="color:#fff;">${q.name}</b></td><td>${q.phone}</td><td style="color:#aaa;">${q.email}</td>
           <td>${q.shoot_type}</td><td>${q.event_dates}</td><td>${q.location}</td><td>${q.budget || '-'}</td><td>${q.services || '-'}</td>
           <td>${q.vision_link ? `<a href="${q.vision_link}" target="_blank" style="color:#ccc; text-decoration:underline;">View Link</a>` : '-'}</td><td>${q.notes ? q.notes.substring(0, 30) + '...' : '-'}</td>
           <td style="color:#666; font-size:12px;">${formatToIST(q.created_at)}</td>
@@ -411,8 +428,18 @@ async function fetchPackages() {
     packagesData = json.data || [];
     packagesData.sort((a, b) => a.price - b.price);
     renderPackagesTable(packagesData);
-    
     updateCategoryDropdowns(packagesData); 
+    
+    // 👇 NEW: Populate the booking modal dropdown 👇
+    const bPackage = document.getElementById('b_package');
+    if (bPackage) {
+      bPackage.innerHTML = '<option value="Manual Entry">Manual Entry</option>';
+      packagesData.forEach(p => {
+        bPackage.innerHTML += `<option value="${p.title}" data-price="${p.price}">${p.title} (₹${p.price.toLocaleString('en-IN')})</option>`;
+      });
+    }
+    // 👆 END NEW 👆
+
   } catch (error) { console.error(error); }
 }
 
@@ -444,13 +471,14 @@ function renderPackagesTable(dataToRender) {
     return;
   }
 
-  dataToRender.forEach(p => {
+  // 👇 Added 'index' here
+  dataToRender.forEach((p, index) => {
     const featList = p.features.replace(/\n/g, '<br>• ');
     const premLabel = p.is_premium ? '<b style="color:#ffffff;">YES (Premium)</b>' : '<span style="color:#555;">No</span>';
     
     tbody.innerHTML += `
       <tr>
-        <td style="color:#555;">${p.id}</td>
+        <td style="color:#555;">${index + 1}</td>
         <td style="text-transform:uppercase; color:#888;">${p.category}</td>
         <td><b style="color:#fff;">${p.title}</b></td>
         <td><span style="color:#fff; font-size:15px;">₹${p.price.toLocaleString('en-IN')}</span></td>
@@ -596,3 +624,101 @@ function viewMedia(url, type) {
   
   modal.style.display = 'flex';
 }
+
+// 👇 NEW: Function to show busy slots for the selected day 👇
+function updateDaySchedulePreview() {
+  const fromInput = document.getElementById('b_from').value;
+  const previewBox = document.getElementById('daySchedulePreview');
+  const listContainer = document.getElementById('scheduleList');
+
+  if (!fromInput) {
+    previewBox.style.display = 'none';
+    return;
+  }
+
+  // Extract just the YYYY-MM-DD part
+  const selectedDate = fromInput.split('T')[0];
+  
+  // Filter all bookings that happen on this day
+  const dailyBookings = bookingsData.filter(b => b.from_date && b.from_date.startsWith(selectedDate));
+
+  if (dailyBookings.length > 0) {
+    previewBox.style.display = 'block';
+    listContainer.innerHTML = dailyBookings.map(b => {
+      const startTime = b.from_date.split('T')[1];
+      const endTime = b.to_date.split('T')[1];
+      return `<div style="border-bottom: 1px solid #1a1a1a; padding: 5px 0;">
+                <b style="color: #fff;">${startTime} - ${endTime}</b>: 
+                <span style="color: #888;">${b.assigned_group || 'Unassigned'}</span> 
+                (${b.name})
+              </div>`;
+    }).join('');
+  } else {
+    previewBox.style.display = 'block';
+    listContainer.innerHTML = `<div style="color: #2ecc71; font-weight: 500;">✓ All slots available. No bookings yet.</div>`;
+  }
+}
+
+
+/* ================= AUTOMATION: PINCODE & PACKAGE AUTO-FILL ================= */
+
+// 1. Auto-fill Total Amount when a package is selected
+document.getElementById('b_package').addEventListener('change', function(e) {
+  const selectedOption = e.target.options[e.target.selectedIndex];
+  const price = selectedOption.getAttribute('data-price');
+  const amountInput = document.getElementById('b_amount');
+  
+  if (price) {
+    amountInput.value = `₹${Number(price).toLocaleString('en-IN')}`;
+  } else if (e.target.value === "Manual Entry") {
+    amountInput.value = "₹0"; // Reset for manual
+  }
+});
+
+// 2. Auto-fetch Location Dropdown List from Pincode
+document.getElementById('b_pincode').addEventListener('input', async function(e) {
+  const pin = e.target.value.trim();
+  const statusEl = document.getElementById('pinStatus');
+  const locInput = document.getElementById('b_location');
+  const dataList = document.getElementById('locationOptions');
+  
+  if (pin.length === 6) {
+    statusEl.innerText = "⏳ Checking...";
+    statusEl.style.color = "#ffb703";
+    try {
+      const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+      const data = await res.json();
+      
+      if (data[0].Status === 'Success') {
+        const postOffices = data[0].PostOffice;
+        
+        // 1. Clear any old options from the dropdown
+        dataList.innerHTML = '';
+        
+        // 2. Loop through every village/area in that pincode and add it to the dropdown list
+        postOffices.forEach(po => {
+          const fullAddress = `${po.Name}, ${po.District}, ${po.State}`;
+          dataList.innerHTML += `<option value="${fullAddress}">`;
+        });
+
+        // 3. Clear the venue box and focus on it so the user sees the dropdown instantly
+        locInput.value = "";
+        locInput.focus();
+        
+        statusEl.innerText = `✅ Found ${postOffices.length} areas`;
+        statusEl.style.color = "#2ecc71";
+      } else {
+        statusEl.innerText = "❌ Invalid Pincode";
+        statusEl.style.color = "#ff4a4a";
+        dataList.innerHTML = ''; // Clear list if invalid
+      }
+    } catch(err) {
+      statusEl.innerText = "❌ Network Error";
+      statusEl.style.color = "#ff4a4a";
+    }
+  } else {
+    // Clear status and dropdown if they delete the pincode
+    statusEl.innerText = ""; 
+    if (dataList) dataList.innerHTML = ''; 
+  }
+});
