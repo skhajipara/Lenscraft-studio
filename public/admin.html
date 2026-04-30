@@ -12,12 +12,48 @@
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
     body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
 
-    #preloader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 1s ease, visibility 1s ease; }
-    .camera-icon svg { width: 70px; height: 70px; margin-bottom: 15px; filter: drop-shadow(0 0 6px rgba(255,255,255,0.2)); }
-    .draw-path { stroke-dasharray: 120; stroke-dashoffset: 120; animation: drawForward 2s infinite; }
-    .draw-lens { stroke-dasharray: 30; stroke-dashoffset: 30; animation: drawForward 2s infinite 0.2s; }
-    .flash-pulse { opacity: 0; transform-origin: 18px 10px; animation: flashPop 2s infinite; }
-    .loader-text { font-size: 16px; font-weight: 600; letter-spacing: 5px; text-transform: uppercase; color: #fff; animation: textPulse 2s infinite; }
+   /* =========================================
+   PRELOADER - PERFECT CENTERING FIX
+========================================= */
+#preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0a0a0a; /* Dark background to match your white SVG */
+  display: flex;
+  flex-direction: column;      /* Stacks icon above text */
+  justify-content: center;     /* Centers vertically */
+  align-items: center;         /* Centers horizontally */
+  z-index: 9999;
+  transition: opacity 0.5s ease, visibility 0.5s;
+}
+
+.camera-icon {
+  width: 80px;                 /* Adjust size as needed */
+  height: auto;
+  margin-bottom: 20px;         /* Space between icon and text */
+}
+
+.loader-text {
+  color: #ffffff;
+  margin: 0;
+  padding: 0 20px;             /* Prevents text from touching phone edges */
+  text-align: center;
+  font-weight: 300;
+  letter-spacing: 2px;
+  
+  /* 👇 THE MAGIC FIX for small screens 👇 */
+  /* This scales the text between 14px and 24px smoothly depending on screen width */
+  font-size: clamp(14px, 4vw, 24px); 
+}
+
+/* Helper class to hide preloader smoothly */
+.preloader-hidden {
+  opacity: 0;
+  visibility: hidden;
+}
     @keyframes drawForward { 0% { stroke-dashoffset: 120; opacity: 0; } 10% { opacity: 1; } 60%, 80% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
     @keyframes flashPop { 0%, 55% { opacity: 0; transform: scale(0); } 60% { opacity: 1; transform: scale(1.5); } 80%, 100% { opacity: 0; transform: scale(0); } }
     @keyframes textPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
@@ -52,9 +88,43 @@
     .panel.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .welcome-container { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; height: 60vh; border-left: 2px solid var(--text-main); padding-left: 40px; }
-    .welcome-container h1 { font-size: 56px; font-weight: 200; margin-bottom: 15px; letter-spacing: -1px; }
-    .welcome-container p { font-size: 18px; color: var(--text-muted); font-weight: 300; }
+  /* 👇 FIX: Hide when navigating away, show as flex when active 👇 */
+  #welcomePanel {
+    justify-content: flex-start; 
+    align-items: center;         
+    min-height: 80vh;            
+    padding-left: 5px;    
+    display: none; /* Hidden by default */      
+  }
+
+  /* Only make it visible (as a flexbox) when the Javascript adds the 'active' class */
+  #welcomePanel.active {
+    display: flex; 
+  }
+
+  /* Your exact code - completely untouched */
+  .welcome-container { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-start; 
+    justify-content: center; 
+    height: 60vh; 
+    border-left: 2px solid var(--text-main); 
+    padding-left: 40px; 
+  }
+
+  .welcome-container h1 { 
+    font-size: 56px; 
+    font-weight: 200; 
+    margin-bottom: 15px; 
+    letter-spacing: -1px; 
+  }
+
+  .welcome-container p { 
+    font-size: 18px; 
+    color: var(--text-muted); 
+    font-weight: 300; 
+  }
 
     /* --- DYNAMIC DATA TABLES --- */
     .table-container { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 8px; overflow-x: auto; }

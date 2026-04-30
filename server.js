@@ -5,9 +5,7 @@ const mongoose = require("mongoose");
 const nodemailer = require("nodemailer");
 const { google } = require("googleapis");
 const PDFDocument = require("pdfkit"); 
-
 const multer = require("multer");
-
 const path = require("path");
 const fs = require("fs");
 
@@ -656,23 +654,51 @@ app.put("/api/admin/bookings/:id", async (req, res) => {
     const oldData = await Booking.findById(id);
     if (!oldData) return res.json({ status: "error" });
 
-    // --- NEW: Check for group time conflict ---
-    if (newData.assigned_group && newData.assigned_group !== "") {
-      const conflict = await Booking.findOne({
-        _id: { $ne: id }, // Exclude current booking from the conflict check
-        assigned_group: newData.assigned_group,
-        from_date: { $lt: newData.to_date },
-        to_date: { $gt: newData.from_date }
-      });
-
-      if (conflict) {
-        return res.json({ status: "conflict", message: `Group ${newData.assigned_group} already has a shoot scheduled for this time period.` });
+    // 👇 NEW: Backend Security - Prevent early "Done" status 👇
+    if (newData.shoot_status === 'Done' && newData.to_date) {
+      const endDate = new Date(newData.to_date);
+      const now = new Date();
+      if (now < endDate) {
+        return res.json({ status: "error", message: "Cannot mark shoot as Done before its conclusion date." });
       }
     }
-    // ------------------------------------------
+    // 👆 END NEW LOGIC 👆
 
+    // --- CONFLICT LOGIC ---
+    if (newData.assigned_group && newData.assigned_group !== "") {
+      const groupBookings = await Booking.find({ assigned_group: newData.assigned_group });
+      const conflict = groupBookings.find(b => {
+        if (b._id.toString() === id) return false; // Ignore current booking
+        if (!b.from_date || !b.to_date) return false;
+        return (b.from_date < newData.to_date && b.to_date > newData.from_date);
+      });
+      
+      if (conflict) {
+        return res.json({ 
+          status: "conflict", 
+          message: `Team ${newData.assigned_group} is already booked from ${conflict.from_date.replace('T', ' ')} to ${conflict.to_date.replace('T', ' ')}.` 
+        });
+      }
+    }
+    // ----------------------
+
+    // Update the database record
     await Booking.findByIdAndUpdate(id, {
-      booking_id: newData.bookingId, name: newData.name, phone: newData.phone, email: newData.email, package: newData.package, amount: newData.amount, paid_amount: newData.paid_amount, from_date: newData.from_date, to_date: newData.to_date, pincode: newData.pincode, location: newData.location, assigned_group: newData.assigned_group, payment_status: newData.payment_status, payment_method: newData.payment_method, shoot_status: newData.shoot_status || 'Pending'
+      booking_id: newData.bookingId, 
+      name: newData.name, 
+      phone: newData.phone, 
+      email: newData.email, 
+      package: newData.package, 
+      amount: newData.amount, 
+      paid_amount: newData.paid_amount, 
+      from_date: newData.from_date, 
+      to_date: newData.to_date, 
+      pincode: newData.pincode, 
+      location: newData.location, 
+      assigned_group: newData.assigned_group, 
+      payment_status: newData.payment_status, 
+      payment_method: newData.payment_method, 
+      shoot_status: newData.shoot_status || 'Pending'
     });
 
     const emailData = { 
@@ -681,40 +707,59 @@ app.put("/api/admin/bookings/:id", async (req, res) => {
       from: newData.from_date, to: newData.to_date, location: newData.location, assignedGroup: newData.assigned_group 
     };
 
+    // Update Google Calendar
     if (oldData.calendar_event_id) {
       const calData = { ...emailData, assignedGroup: newData.assigned_group };
       await updateGoogleEvent(oldData.calendar_event_id, calData);
     }
 
+    // Handle Team Reassignment Emails
     if (oldData.assigned_group !== newData.assigned_group) {
+      // Alert old team they are removed
       if (oldData.assigned_group) {
         const staffRow1 = await StaffGroup.findOne({ group_name: oldData.assigned_group });
-        if (staffRow1 && staffRow1.email) transporter.sendMail({ from: process.env.EMAIL_USER, to: staffRow1.email, subject: `Shoot Cancelled - [${oldData.booking_id}]`, html: staffCancellationTemplate({...emailData, assignedGroup: oldData.assigned_group}) });
+        if (staffRow1 && staffRow1.email) {
+          transporter.sendMail({ 
+            from: process.env.EMAIL_USER, 
+            to: staffRow1.email, 
+            subject: `Shoot Cancelled - [${oldData.booking_id}]`, 
+            html: staffCancellationTemplate({...emailData, assignedGroup: oldData.assigned_group}) 
+          });
+        }
       }
+      // Alert new team they are assigned
       if (newData.assigned_group) {
         const staffRow2 = await StaffGroup.findOne({ group_name: newData.assigned_group });
-        if (staffRow2 && staffRow2.email) transporter.sendMail({ from: process.env.EMAIL_USER, to: staffRow2.email, subject: `New Shoot Assigned - [${newData.bookingId}]`, html: staffTemplate({...emailData, assignedGroup: newData.assigned_group}) });
+        if (staffRow2 && staffRow2.email) {
+          transporter.sendMail({ 
+            from: process.env.EMAIL_USER, 
+            to: staffRow2.email, 
+            subject: `New Shoot Assigned - [${newData.bookingId}]`, 
+            html: staffTemplate({...emailData, assignedGroup: newData.assigned_group}) 
+          });
+        }
       }
     }
 
+    // Handle Payment Status Update (Invoice Generation)
     if (oldData.payment_status !== newData.payment_status && newData.payment_status !== "") {
-      const invoiceData = { 
-        ...emailData, 
-        paymentStatus: newData.payment_status, 
-        paymentMethod: newData.payment_method
-      };
-      
+      const invoiceData = { ...emailData, paymentStatus: newData.payment_status, paymentMethod: newData.payment_method };
       const pdfBuffer = await createInvoicePDF(invoiceData);
+      
       await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: newData.email,
+        from: process.env.EMAIL_USER, 
+        to: newData.email, 
         subject: `Payment Receipt & Invoice - LensCraft Studio [${newData.bookingId}]`,
-        html: paymentUpdateTemplate(invoiceData),
+        html: paymentUpdateTemplate(invoiceData), 
         attachments: [{ filename: `LensCraft_Invoice_${newData.bookingId}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }]
       });
     }
+    
     res.json({ status: "success" });
-  } catch(err) { res.json({ status: "error" }); }
+  } catch(err) { 
+    console.error(err);
+    res.json({ status: "error" }); 
+  }
 });
 
 app.delete("/api/admin/bookings/:id", async (req, res) => {
@@ -722,25 +767,48 @@ app.delete("/api/admin/bookings/:id", async (req, res) => {
     const row = await Booking.findById(req.params.id);
     if (!row) return res.json({ status: "error" });
 
-    if (row.calendar_event_id) { 
+    // 1. Delete from Google Calendar
+    if (row.calendar_event_id) {
       await deleteGoogleEvent(row.calendar_event_id); 
     }
 
-    if (row.assigned_group) {
-      const emailData = {
-        bookingId: row.booking_id, name: row.name, phone: row.phone, package: row.package,
-        from: row.from_date, to: row.to_date, location: row.location, assignedGroup: row.assigned_group
+    // 👇 NEW LOGIC: Alert Admin AND Staff if shoot is cancelled (Not 'Done')
+    if (row.shoot_status !== 'Done') {
+      const emailData = { 
+        bookingId: row.booking_id, name: row.name, phone: row.phone, 
+        package: row.package, from: row.from_date, to: row.to_date, 
+        location: row.location, assignedGroup: row.assigned_group || 'Unassigned'
       };
+      
+      // A. Send Cancellation Alert to Admin
+      transporter.sendMail({ 
+        from: process.env.EMAIL_USER, 
+        to: process.env.EMAIL_USER, // Sends to your studio email
+        subject: `[SYSTEM ALERT] Booking Deleted - ${row.booking_id}`, 
+        html: staffCancellationTemplate(emailData) 
+      });
 
-      const staffRow = await StaffGroup.findOne({ group_name: row.assigned_group });
-      if (staffRow && staffRow.email) {
-        transporter.sendMail({ from: process.env.EMAIL_USER, to: staffRow.email, subject: `Shoot Cancelled/Deleted - [${row.booking_id}]`, html: staffCancellationTemplate(emailData) });
+      // B. Send Cancellation Alert to Assigned Staff Group
+      if (row.assigned_group) {
+        const staffRow = await StaffGroup.findOne({ group_name: row.assigned_group });
+        if (staffRow && staffRow.email) {
+          transporter.sendMail({ 
+            from: process.env.EMAIL_USER, 
+            to: staffRow.email, 
+            subject: `Shoot Cancelled/Deleted - [${row.booking_id}]`, 
+            html: staffCancellationTemplate(emailData) 
+          });
+        }
       }
     }
 
+
+    // 2. Delete from Database
     await Booking.findByIdAndDelete(req.params.id);
     res.json({ status: "success" }); 
-  } catch(err) { res.json({ status: "error" }); }
+  } catch(err) { 
+    res.json({ status: "error" }); 
+  }
 });
 
 app.get("/api/admin/quotes", async (req, res) => {

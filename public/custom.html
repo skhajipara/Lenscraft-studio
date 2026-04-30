@@ -126,13 +126,6 @@
         <label>Type of Shoot <span class="req-star">*</span></label>
         <select id="c_shootType" required style="appearance: auto;">
           <option value="" disabled selected>Select shoot type</option>
-          <option value="Wedding">Wedding</option>
-          <option value="Engagement">Engagement</option>
-          <option value="Pre-Wedding">Pre-Wedding</option>
-          <option value="Corporate Event">Corporate Event</option>
-          <option value="Concert/Festival">Concert / Festival</option>
-          <option value="Maternity/Baby">Maternity / Baby</option>
-          <option value="Other">Other</option>
         </select>
       </div>
 
@@ -304,6 +297,40 @@
     }
   });
   
+  document.addEventListener('DOMContentLoaded', fetchLiveCategories);
+
+  async function fetchLiveCategories() {
+    try {
+      // Fetch the live packages from your public API
+      const response = await fetch('/api/packages');
+      const json = await response.json();
+      const packagesData = json.data || [];
+
+      // Extract only the UNIQUE categories (so "Wedding" only shows up once)
+      const uniqueCategories = [...new Set(packagesData.map(p => p.category.toLowerCase()))];
+      
+      const dropdown = document.getElementById('c_shootType');
+      
+      // Clear the dropdown and add the default option back
+      dropdown.innerHTML = '<option value="" disabled selected>Select shoot type</option>';
+
+      // Loop through your live categories and inject them
+      uniqueCategories.forEach(cat => {
+        // Capitalize the first letter so it looks professional (e.g. "wedding" -> "Wedding")
+        const formattedCat = cat.charAt(0).toUpperCase() + cat.slice(1);
+        dropdown.innerHTML += `<option value="${formattedCat}">${formattedCat}</option>`;
+      });
+
+      // Always keep "Other" at the very bottom just in case!
+      dropdown.innerHTML += '<option value="Other">Other Custom Event</option>';
+
+    } catch (err) {
+      console.error("Failed to load live categories:", err);
+      // Fallback in case of a network error so the user can still submit the form
+      document.getElementById('c_shootType').innerHTML += '<option value="Custom">Custom Request</option>';
+    }
+  }
+
   const revealElement = document.querySelector(".reveal");
   setTimeout(() => {
     revealElement.classList.add("active");

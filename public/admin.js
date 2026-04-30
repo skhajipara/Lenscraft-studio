@@ -306,19 +306,30 @@ async function saveBooking() {
     return;
   }
 
-  // Variables for Conflict Check
+  // Variables for Conflict & Time Check
   const fromDateStr = document.getElementById('b_from').value;
   const toDateStr = document.getElementById('b_to').value;
   const assignedGroup = document.getElementById('b_group').value;
   const currentId = document.getElementById('b_id').value;
+  const shootStatus = document.getElementById('b_shootStatus').value;
 
-  // 👇 FOOLPROOF FRONTEND CONFLICT CHECK 👇
+  // 👇 NEW LOGIC: Prevent marking as "Done" before the shoot finishes 👇
+  if (shootStatus === 'Done' && toDateStr) {
+    const endDate = new Date(toDateStr);
+    const now = new Date();
+    
+    if (now < endDate) {
+      alert(`⏱️ TIME ERROR ⏱️\n\nYou cannot mark this shoot as "Done" because the event has not finished yet!\n\nScheduled Conclusion: ${toDateStr.replace('T', ' ')}`);
+      return; // STOPS THE SAVE IMMEDIATELY
+    }
+  }
+
+  // 👇 BULLETPROOF FRONTEND CONFLICT CHECK 👇
   if (assignedGroup && assignedGroup !== "") {
     const conflict = bookingsData.find(b => {
-      if (currentId && b.id == currentId) return false; // Ignore itself when editing
-      if (b.assigned_group !== assignedGroup) return false; // Different group
+      if (currentId && b.id == currentId) return false; 
+      if (b.assigned_group !== assignedGroup) return false; 
       if (!b.from_date || !b.to_date) return false;
-      // Check if dates overlap
       return (b.from_date < toDateStr && b.to_date > fromDateStr);
     });
 
@@ -329,17 +340,15 @@ async function saveBooking() {
       const customText = document.getElementById('customAlertText');
       
       if (customModal && customText) {
-        // Show middle of screen dark modal
         customText.innerText = conflictMsg;
         customModal.style.display = 'flex';
       } else {
-        // Failsafe regular alert
         alert(`⚠️ SCHEDULING CONFLICT ⚠️\n\n` + conflictMsg);
       }
-      return; // STOP SAVE
+      return; // STOPS THE SAVE
     }
   }
-  // 👆 END CONFLICT CHECK 👆
+
 
   const payload = {
     bookingId: document.getElementById('b_bookingId').value, 
@@ -356,7 +365,7 @@ async function saveBooking() {
     assigned_group: assignedGroup, 
     payment_status: document.getElementById('b_payStatus').value,
     payment_method: document.getElementById('b_payMethod').value,
-    shoot_status: document.getElementById('b_shootStatus').value
+    shoot_status: shootStatus
   };
   
   await fetch(currentId ? `/api/admin/bookings/${currentId}` : `/api/admin/bookings`, { 
